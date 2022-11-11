@@ -1,4 +1,4 @@
-package utils;
+package com.utils;
 
 import org.apache.commons.io.FileUtils;
 import org.hyperledger.indy.sdk.IndyException;
@@ -8,7 +8,6 @@ import org.hyperledger.indy.sdk.pool.PoolJSONParameters;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 
 public class PoolUtils {
     private static final String DEFAULT_POOL_NAME = "issuer3";
@@ -16,8 +15,8 @@ public class PoolUtils {
 
 
     private static File createGenesisTxnFile(String filename) throws IOException {
-        String path = EnvironmentUtils.getTmpPath(filename);
-        String testPoolIp = EnvironmentUtils.getTestPoolIP();
+        String path = com.utils.EnvironmentUtils.getTmpPath(filename);
+        String testPoolIp = com.utils.EnvironmentUtils.getTestPoolIP();
 
         String[] defaultTxns = new String[]{
                 String.format("{\"reqSignature\":{},\"txn\":{\"data\":{\"data\":{\"alias\":\"Node1\",\"blskey\":\"4N8aUNHSgjQVgkpm8nhNEfDf6txHznoYREg9kirmJrkivgL4oSEimFF6nsQ6M41QvhM2Z33nves5vfSn9n1UwNFJBYtWVnHYMATn76vLuL3zU88KyeAYcHfsih3He6UHcXDxcaecHVz6jhCYz1P2UZn2bDVruL5wXpehgBfBaLKm3Ba\",\"blskey_pop\":\"RahHYiCvoNCtPTrVtP7nMC5eTYrsUA8WjXbdhNc8debh1agE9bGiJxWBXYNFbnJXoXhWFMvyqhqhRoq737YQemH5ik9oL7R4NTTCz2LEZhkgLJzB3QRQqJyBNyv7acbdHrAT8nQ9UkLbaVL9NBpnWXBTw4LEMePaSHEw66RzPNdAX1\",\"client_ip\":\"%s\",\"client_port\":9702,\"node_ip\":\"%s\",\"node_port\":9701,\"services\":[\"VALIDATOR\"]},\"dest\":\"Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv\"},\"metadata\":{\"from\":\"Th7MpTaRZVRYnPiabds81Y\"},\"type\":\"0\"},\"txnMetadata\":{\"seqNo\":1,\"txnId\":\"fea82e10e894419fe2bea7d96296a6d46f50f93f9eeda954ec461b2ed2950b62\"},\"ver\":\"1\"}", testPoolIp, testPoolIp),
@@ -28,7 +27,7 @@ public class PoolUtils {
 
         File file = new File(path);
 
-        FileUtils.forceMkdirParent(file);
+        //FileUtils.forceMkdirParent(file);
 
         FileWriter fw = new FileWriter(file);
         for (String defaultTxn : defaultTxns) {

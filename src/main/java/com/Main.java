@@ -1,3 +1,5 @@
+package com;
+
 import java.util.Scanner;
 
 import org.springframework.boot.SpringApplication;
@@ -6,8 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -22,8 +22,10 @@ public class Main {
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         Scanner sc = new Scanner(System.in);
 
+        System.out.println("Hello");
+
         return args -> {
-            /*
+
             indyNodeManager.ConnectIndyPool();
             System.out.println("Wallet ID: ");
             String my_wallet = sc.next();
@@ -34,10 +36,10 @@ public class Main {
             indyNodeManager.createDid();
             indyNodeManager.GetValidatorInfo();
 
-             */
 
-            // System.out.println("wallet indfo : " + indyNodeManager.myDid);
-            indyNodeManager.RunIndyContainer();
+
+            System.out.println("wallet indfo : " + indyNodeManager.myDid);
+            //indyNodeManager.RunIndyContainer();
         };
     }
 

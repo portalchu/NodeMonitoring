@@ -1,31 +1,21 @@
+package com;
 
+import com.utils.PoolUtils;
 import org.apache.commons.io.FileUtils;
 import org.hyperledger.indy.sdk.ledger.Ledger;
 import org.hyperledger.indy.sdk.pool.Pool;
 import org.hyperledger.indy.sdk.did.Did;
 import org.hyperledger.indy.sdk.did.DidJSONParameters;
 import org.hyperledger.indy.sdk.did.DidResults.CreateAndStoreMyDidResult;
-import org.hyperledger.indy.sdk.ledger.LedgerResults.ParseResponseResult;
 import org.hyperledger.indy.sdk.wallet.Wallet;
 import org.json.JSONObject;
 import org.json.JSONArray;
-import utils.*;
 
-import static utils.PoolUtils.PROTOCOL_VERSION;
-import static org.hyperledger.indy.sdk.anoncreds.Anoncreds.*;
+import static com.utils.PoolUtils.PROTOCOL_VERSION;
 import static org.hyperledger.indy.sdk.ledger.Ledger.buildNymRequest;
 import static org.hyperledger.indy.sdk.ledger.Ledger.buildAttribRequest;
 import static org.hyperledger.indy.sdk.ledger.Ledger.buildGetAttribRequest;
 import static org.hyperledger.indy.sdk.ledger.Ledger.buildGetNymRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildSchemaRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildCredDefRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildRevocRegDefRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildRevocRegEntryRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildGetSchemaRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.parseGetSchemaResponse;
-import static org.hyperledger.indy.sdk.ledger.Ledger.appendRequestEndorser;
-import static org.hyperledger.indy.sdk.ledger.Ledger.multiSignRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.submitRequest;
 import static org.hyperledger.indy.sdk.ledger.Ledger.signAndSubmitRequest;
 import static org.junit.Assert.assertEquals;
 
@@ -96,7 +86,7 @@ public class NodeMonitoring {
         // Pool 연결 Protocol Version: 고정값
         // PROTOCOL_VERSION = 2;
         Pool.setProtocolVersion(PROTOCOL_VERSION).get();
-        // /utils/PoolUtils.java: Pool 연결을 위한 Config File 생성 함수
+        // /com.utils/PoolUtils.java: Pool 연결을 위한 Config File 생성 함수
         // DEFAULT_POOL_NAME = "issuer";
         // Pool Config 생성 API 사용: Pool.createPoolLedgerConfig(원장 이름, Pool Genesis Transaction File)
         this.poolName = PoolUtils.createPoolLedgerConfig();
