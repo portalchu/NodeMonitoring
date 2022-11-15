@@ -1,4 +1,4 @@
-package com.utils;
+package utils;
 
 import org.apache.commons.io.FileUtils;
 

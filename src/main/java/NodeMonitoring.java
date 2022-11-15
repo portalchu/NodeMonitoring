@@ -1,6 +1,5 @@
-package com;
 
-import com.utils.PoolUtils;
+import utils.PoolUtils;
 import org.apache.commons.io.FileUtils;
 import org.hyperledger.indy.sdk.ledger.Ledger;
 import org.hyperledger.indy.sdk.pool.Pool;
@@ -11,7 +10,7 @@ import org.hyperledger.indy.sdk.wallet.Wallet;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import static com.utils.PoolUtils.PROTOCOL_VERSION;
+import static utils.PoolUtils.PROTOCOL_VERSION;
 import static org.hyperledger.indy.sdk.ledger.Ledger.buildNymRequest;
 import static org.hyperledger.indy.sdk.ledger.Ledger.buildAttribRequest;
 import static org.hyperledger.indy.sdk.ledger.Ledger.buildGetAttribRequest;
