@@ -79,7 +79,9 @@ public class NodeMonitoring {
     // 서비스 엔드 포인트
     String ServiceEndpoint;
 
-    String server_IP = "220.68.5.139";
+    String server_IP = "192.168.45.155";
+
+    String pool_Name = "'sandbox'";
 
     public void ConnectIndyPool() throws Exception{
         System.out.println("Start Ledger");
@@ -354,11 +356,15 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
+
+
         cmd = "docker run -itd --name indy-test1 -p " + server_IP + ":9711-9720:9711-9720 -e POOL='sandbox' indy-test";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker exec --user root indy-test1 sh -c \"cd etc/indy;sed -i 's/None/$POOL/g' indy_config.py\"";
+
+
+        cmd = "docker exec --user root indy-test1 sh -c \"cd etc/indy;sed -i \"s/None/$POOL/g\" indy_config.py\"";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
@@ -366,17 +372,27 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker cp C:/Users/giry0612/indy/sandbox/pool_transactions_genesis indy-test1:/var/lib/indy/sandbox";
+
+
+        cmd = "docker cp indy-test:/var/lib/indy " + FileUtils.getUserDirectoryPath();
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker cp indy-test1:/NewNode_info.txt ./";
+        cmd = "docker cp " + FileUtils.getUserDirectoryPath() + "/indy/sandbox/pool_transactions_genesis indy-test1:/var/lib/indy/sandbox";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker exec --user root indy-test1 sh -c \"start_indy_node NewNode 0.0.0.0 9711 0.0.0.0 9712\"";
+        cmd = "docker cp indy-test1:/NewNode_info.txt " + FileUtils.getUserDirectoryPath();
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
+
+        cmd = "docker exec --user root -d indy-test1 sh -c \"start_indy_node NewNode 0.0.0.0 9711 0.0.0.0 9712\"";
+        System.out.println("cmd : " + cmd);
+        RunWindowCmd(cmd);
+
+
+
+
     }
 
     public String RunWindowCmd(String cmd) throws Exception {
