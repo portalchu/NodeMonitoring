@@ -13,6 +13,9 @@ public class Main {
         System.out.println("Hello");
 
         try {
+            indyNodeManager.RunIndyContainer();
+
+            /*
             indyNodeManager.ConnectIndyPool();
             System.out.println("Wallet ID: ");
             String my_wallet = sc.next();
@@ -22,6 +25,8 @@ public class Main {
             indyNodeManager.createEndorserDid();
             indyNodeManager.createDid();
             indyNodeManager.GetValidatorInfo();
+
+             */
 
 
         } catch (Exception e) {

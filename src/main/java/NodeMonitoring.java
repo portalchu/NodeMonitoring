@@ -18,7 +18,9 @@ import static org.hyperledger.indy.sdk.ledger.Ledger.buildGetNymRequest;
 import static org.hyperledger.indy.sdk.ledger.Ledger.signAndSubmitRequest;
 import static org.junit.Assert.assertEquals;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -346,8 +348,49 @@ public class NodeMonitoring {
     public void RunIndyContainer() throws Exception {
         System.out.println("==== RunIndyContainer ====");
 
-        Process p = Runtime.getRuntime().exec("D:\\test.sh");
+        String cmd;
 
+        cmd = "ipconfig";
+        System.out.println("cmd : " + cmd);
+        RunWindowCmd(cmd);
+
+        cmd = "docker run -itd --name indy-test1 -p " + server_IP + ":9711-9720:9711-9720 -e POOL='sandbox' indy-test";
+        System.out.println("cmd : " + cmd);
+        RunWindowCmd(cmd);
+
+        cmd = "docker exec --user root indy-test1 sh -c \"cd etc/indy;sed -i 's/None/$POOL/g' indy_config.py\"";
+        System.out.println("cmd : " + cmd);
+        RunWindowCmd(cmd);
+
+        cmd = "docker exec --user root indy-test1 sh -c \"init_indy_node NewNode " + server_IP + " 9711 " + server_IP + " 9712 0000000000000000000000000NewNode >> NewNode_info.txt\"";
+        System.out.println("cmd : " + cmd);
+        RunWindowCmd(cmd);
+
+        cmd = "docker cp C:/Users/giry0612/indy/sandbox/pool_transactions_genesis indy-test1:/var/lib/indy/sandbox";
+        System.out.println("cmd : " + cmd);
+        RunWindowCmd(cmd);
+
+        cmd = "docker cp indy-test1:/NewNode_info.txt ./";
+        System.out.println("cmd : " + cmd);
+        RunWindowCmd(cmd);
+
+        cmd = "docker exec --user root indy-test1 sh -c \"start_indy_node NewNode 0.0.0.0 9711 0.0.0.0 9712\"";
+        System.out.println("cmd : " + cmd);
+        RunWindowCmd(cmd);
+    }
+
+    public String RunWindowCmd(String cmd) throws Exception {
+        Process p = Runtime.getRuntime().exec("cmd /c " + cmd);
+        BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+        String line = null;
+
+        while((line = br.readLine()) != null) {
+
+            System.out.println(line);
+        }
+
+        return line;
     }
 
 }
