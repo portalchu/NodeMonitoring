@@ -21,7 +21,12 @@ import static org.junit.Assert.assertEquals;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 public class NodeMonitoring {
@@ -42,45 +47,17 @@ public class NodeMonitoring {
     String myDid;
     // Issuer 공개키
     String myVerkey;
-    // Endorser DID (Schema 등 Credential과 관련된 데이터 저장 시 다중서명에 사용)
-    String endorserDid;
-    // Endorser 공개키 (Schema 등 Credential과 관련된 데이터 저장 시 다중서명에 사용)
-    String endorserVerkey;
-    // 생성한 Schema ID
-    String schemaId;
-    // 생성한 Schema 내용
-    String schemaJson;
-    // 생성한 Credential Definition ID
-    String credDefId;
-    // 생성한 Credential Definition 내용
-    String credDefJson;
-    // Tails File Writer 구성
-    String tailsWriterConfig;
-    // Revocation Registry Definition 구성
-    String revRegDefConfig;
-    // 생성한 Revocation Registry Definitoin ID
-    String revRegId;
-    // 생성한 Revocation Registry Definition 내용
-    String revRegDefJson;
-    // Credential 생성/삭제 마다 생성되는 Revocation Registry Delta
-    String revRegEntryJson;
-    // Tails File Reader 핸들
-    int blobStorageReaderHandle;
-    // 사용자가 Credential 생성을 요청하기 위해 필요로 하는 Credential Offer
-    String credOffer;
-    // Issuer Endpoint
-    String myEndpoint;
-    // 입력을 위한 객체
+    // 입력을 위해 사용
     Scanner sc = new Scanner(System.in);
     // 서버가 종료된 후, 새로 실행 시 이전에 사용했던 데이터들을 저장하고 있기 위한 메타데이터(Schema ID, Credential Definition ID ...)
     JSONObject myDidMetadata;
-    // 랜덤값
-    String randomString;
-    // 서비스 엔드 포인트
-    String ServiceEndpoint;
 
     //String server_IP = "192.168.45.155";
     String server_IP = "220.68.5.138";
+
+    int unreachableNodeCount = 0;
+    int totalNodeCount = 0;
+    int reachableNodeCount = 0;
 
     public void ConnectIndyPool() throws Exception{
         System.out.println("Start Ledger");
@@ -122,9 +99,8 @@ public class NodeMonitoring {
         // 지갑이 없으면
         if (!walletFilePathCheck.isDirectory()) {
             createWallet(myWallet, myWalletKey);
-            createEndorserDid();
+            createTrusteeDid();
             createDid();
-            createEndpoint();
         }
         else { // 지갑이 있으면
             openWallet(myWallet, myWalletKey);
@@ -174,13 +150,10 @@ public class NodeMonitoring {
     }
 
     // trusteedid, endoserdid(schema 생성에 필요) 생성
-    public void createEndorserDid() throws Exception{
-        System.out.println("Create Endorser DID");
+    public void createTrusteeDid() throws Exception{
+        System.out.println("Create Trustee DID");
         // endorser DID 생성
         // DID 생성 API 사용: Did.createAndStoreMyDid(지갑 핸들, DID 생성 구성(없으면 Default))
-        CreateAndStoreMyDidResult createMyDidResult = Did.createAndStoreMyDid(this.wallet, "{}").get();
-        this.endorserDid = createMyDidResult.getDid();
-        this.endorserVerkey = createMyDidResult.getVerkey();
 
         // trusteeSeed를 사용하여 블록체인에 등록된 trustee DID 생성
         DidJSONParameters.CreateAndStoreMyDidJSONParameter theirDidJson =
@@ -189,14 +162,6 @@ public class NodeMonitoring {
         // DID 생성 API 사용: Did.createAndStoreMyDid(지갑 핸들, DID 생성 구성(없으면 Default))
         CreateAndStoreMyDidResult createTheirDidResult = Did.createAndStoreMyDid(this.wallet, theirDidJson.toJson()).get();
         this.trusteeDid = createTheirDidResult.getDid();
-
-        // trustee DID의 트랜잭션 작성: 블록체인에 endorser DID 등록
-        // 트랜잭션 생성 API 사용: buildNymRequest(트랜잭션 작성자 DID, 저장할 DID, 저장할 공개키, 트랜잭션 별칭, 저장할 DID의 권한)
-        String nymRequest = buildNymRequest(this.trusteeDid, this.endorserDid, this.endorserVerkey, null, "ENDORSER").get();
-
-        // 저장
-        // 블록체인 저장 API 사용: signAndSubmitRequest(원장 핸들, 지갑 핸들, 트랜잭션 작성자 DID, 트랜잭션)
-        signAndSubmitRequest(this.pool, this.wallet, this.trusteeDid, nymRequest).get();
     }
 
     // did 생성
@@ -219,46 +184,11 @@ public class NodeMonitoring {
         assertEquals(this.myDid, nymResponse.getJSONObject("result").getJSONObject("txn").getJSONObject("data").getString("dest"));
         assertEquals(this.myVerkey, nymResponse.getJSONObject("result").getJSONObject("txn").getJSONObject("data").getString("verkey"));
 
-        /*
+        
         // did 메타데이터 정보 저장을 위해 작성
         this.myDidMetadata.put("myDid", this.myDid);
-        this.myDidMetadata.put("endorserDid", this.endorserDid);
         this.myDidMetadata.put("trusteeDid", this.trusteeDid);
         this.myDidMetadata.put("myVerkey", this.myVerkey);
-        Did.setDidMetadata(this.wallet, this.myDid, this.myDidMetadata.toString());
-         */
-    }
-
-    // endpoint 생성
-    // 다른 사용자는 DID를 통해 나의 Endpoint를 검색할 수 있음
-    public void createEndpoint() throws Exception{
-        System.out.println("Create Endpoint");
-
-        // 현재 HOST Address 추출
-
-		/*
-		InetAddress inad = InetAddress.getLocalHost();
-        	System.out.println("hostAddress : "+inad.getHostAddress());
-		String localhost_Address = "http://"+inad.getHostAddress().toString()+":8383/api/request/";
-		*/
-        String localhost_Address = "http://" + server_IP + ":8383/api/request/";
-
-        System.out.println("address : " + localhost_Address);
-
-        // Issuer Endpoint 생성
-        this.myEndpoint = "{\"endpoint\":{\"test\":\""+localhost_Address+"\"}}";
-
-        // Endpoint는 ATTRIB 트랜잭션에 작성되어 저장됨
-        // 트랜잭션 생성 API 사용: buildAttribRequest(트랜잭션 작성자 DID, 저장할 DID, 데이터 해시값, 속성, 암호화된 속성 데이터)
-        String attribRequest = buildAttribRequest(this.myDid, this.myDid, null, this.myEndpoint, null).get();
-
-        // 블록체인 저장 API 사용: signAndSubmitRequest(원장 핸들, 지갑 핸들, 트랜잭션 작성자 DID, 트랜잭션)
-        String attribResponse = signAndSubmitRequest(this.pool, this.wallet, this.myDid, attribRequest).get();
-
-        System.out.println("Attrib Response Json: "+attribResponse);
-
-        // did 메타데이터 정보 저장을 위해 작성
-        this.myDidMetadata.put("myEndpoint", this.myEndpoint);
         Did.setDidMetadata(this.wallet, this.myDid, this.myDidMetadata.toString());
     }
 
@@ -318,7 +248,6 @@ public class NodeMonitoring {
 
                 // 각각의 정보들을 변수에 매핑
                 this.myDid = myDidMetadata.getString("myDid");
-                this.endorserDid = myDidMetadata.getString("endorserDid");
                 this.trusteeDid = myDidMetadata.getString("trusteeDid");
                 this.myVerkey = myDidMetadata.getString("myVerkey");
             }
@@ -334,10 +263,6 @@ public class NodeMonitoring {
         JSONObject getValidatorInfoObj = new JSONObject(getValidatorInfoResponse);
 
         System.out.println("getValidatorInfoObj : " + getValidatorInfoObj);
-
-        int unreachableNodeCount = 0;
-        int totalNodeCount = 0;
-        int reachableNodeCount = 0;
 
         for (int i = 1; i <= 4; i++) {
             //Assert.assertFalse(new JSONObject(getValidatorInfoObj.getString(String.format("Node%s", i))).getJSONObject("result").isNull("data"));
@@ -356,7 +281,6 @@ public class NodeMonitoring {
         System.out.println("unreachableNodeCount : " + unreachableNodeCount);
         System.out.println("totalNodeCount : " + totalNodeCount);
         System.out.println("reachableNodeCount : " + reachableNodeCount);
-
     }
 
     public void RunIndyContainer() throws Exception {
@@ -368,13 +292,9 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-
-
         cmd = "docker run -itd --name indy-test1 -p " + server_IP + ":9711-9720:9711-9720 -e POOL='sandbox' indy-test";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
-
-
 
         cmd = "docker exec --user root indy-test1 sh -c \"cd etc/indy;sed -i \"s/None/$POOL/g\" indy_config.py\"";
         System.out.println("cmd : " + cmd);
@@ -383,8 +303,6 @@ public class NodeMonitoring {
         cmd = "docker exec --user root indy-test1 sh -c \"init_indy_node NewNode " + server_IP + " 9711 " + server_IP + " 9712 0000000000000000000000000NewNode >> NewNode_info.txt\"";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
-
-
 
         cmd = "docker cp indy-test:/var/lib/indy " + FileUtils.getUserDirectoryPath();
         System.out.println("cmd : " + cmd);
@@ -402,9 +320,6 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-
-
-
     }
 
     public String RunWindowCmd(String cmd) throws Exception {
@@ -421,5 +336,37 @@ public class NodeMonitoring {
         return line;
     }
 
+    public void AddNode() throws Exception {
+        List<String> nodeFileList = Files.readAllLines(Paths.get(
+                FileUtils.getUserDirectoryPath() + "/NewNode_info.txt"));
+
+        System.out.println("nodeFileList : " + nodeFileList);
+
+        String nodeFileString = Files.readString(Paths.get(
+                FileUtils.getUserDirectoryPath() + "/NewNode_info.txt"));
+
+        System.out.println("nodeFileString : " + nodeFileString);
+
+        Scanner nodeFileScanner = new Scanner(new File(
+                FileUtils.getUserDirectoryPath() + "/NewNode_info.txt"));
+
+        List<String> nodeFileScannerList = new ArrayList<>();
+
+        while (nodeFileScanner.hasNext()) {
+            String str = nodeFileScanner.next();
+            System.out.println(str);
+
+            nodeFileScannerList.add(str);
+        }
+
+        System.out.println("nodeFileScannerList : " + nodeFileScannerList);
+
+        for (int i = 3; nodeFileScannerList.size() > i; i += 4)
+        {
+            System.out.println("i : " + i);
+            System.out.println(nodeFileScannerList.get(i));
+        }
+
+    }
 }
 
