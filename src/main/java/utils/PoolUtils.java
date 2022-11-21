@@ -10,7 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class PoolUtils {
-    private static final String DEFAULT_POOL_NAME = "issuer3";
+    private static final String DEFAULT_POOL_NAME = "issuer2";
     public static final int PROTOCOL_VERSION = 2;
 
 

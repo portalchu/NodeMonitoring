@@ -79,9 +79,8 @@ public class NodeMonitoring {
     // 서비스 엔드 포인트
     String ServiceEndpoint;
 
-    String server_IP = "192.168.45.155";
-
-    String pool_Name = "'sandbox'";
+    //String server_IP = "192.168.45.155";
+    String server_IP = "220.68.5.138";
 
     public void ConnectIndyPool() throws Exception{
         System.out.println("Start Ledger");
@@ -322,10 +321,6 @@ public class NodeMonitoring {
                 this.endorserDid = myDidMetadata.getString("endorserDid");
                 this.trusteeDid = myDidMetadata.getString("trusteeDid");
                 this.myVerkey = myDidMetadata.getString("myVerkey");
-                this.myEndpoint = myDidMetadata.getString("myEndpoint");
-                this.schemaId = myDidMetadata.getString("schemaId");
-                this.credDefId = myDidMetadata.getString("credDefId");
-                this.revRegId = myDidMetadata.getString("revRegId");
             }
         }
     }
@@ -340,11 +335,28 @@ public class NodeMonitoring {
 
         System.out.println("getValidatorInfoObj : " + getValidatorInfoObj);
 
+        int unreachableNodeCount = 0;
+        int totalNodeCount = 0;
+        int reachableNodeCount = 0;
+
         for (int i = 1; i <= 4; i++) {
             //Assert.assertFalse(new JSONObject(getValidatorInfoObj.getString(String.format("Node%s", i))).getJSONObject("result").isNull("data"));
             JSONObject validatorInfo = new JSONObject(getValidatorInfoObj.getString(String.format("Node%s", i)));
             System.out.println("validatorInfo : " + validatorInfo);
+
+            JSONObject result = validatorInfo.getJSONObject("result");
+            JSONObject data = result.getJSONObject("data");
+            JSONObject poolInfo = data.getJSONObject("Pool_info");
+
+            unreachableNodeCount = poolInfo.getInt("Unreachable_nodes_count");
+            totalNodeCount = poolInfo.getInt("Total_nodes_count");
+            reachableNodeCount = poolInfo.getInt("Reachable_nodes_count");
         }
+
+        System.out.println("unreachableNodeCount : " + unreachableNodeCount);
+        System.out.println("totalNodeCount : " + totalNodeCount);
+        System.out.println("reachableNodeCount : " + reachableNodeCount);
+
     }
 
     public void RunIndyContainer() throws Exception {
