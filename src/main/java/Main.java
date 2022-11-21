@@ -12,7 +12,7 @@ public class Main {
 
         try {
 
-            /*
+
             indyNodeManager.ConnectIndyPool();
             System.out.println("Wallet ID: ");
             String my_wallet = sc.next();
@@ -23,16 +23,15 @@ public class Main {
             indyNodeManager.createDid();
             indyNodeManager.GetValidatorInfo();
 
-             */
 
-            //indyNodeManager.RunIndyContainer();
+
+            indyNodeManager.RunIndyContainer();
             indyNodeManager.AddNode();
 
         } catch (Exception e) {
             System.out.println("Exception : " + e);
         }
 
-        System.out.println("wallet indfo : " + indyNodeManager.myDid);
         //indyNodeManager.RunIndyContainer();
     }
 

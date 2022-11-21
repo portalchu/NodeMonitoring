@@ -10,20 +10,13 @@ import org.hyperledger.indy.sdk.wallet.Wallet;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import static org.hyperledger.indy.sdk.ledger.Ledger.*;
 import static utils.PoolUtils.PROTOCOL_VERSION;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildNymRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildAttribRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildGetAttribRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.buildGetNymRequest;
-import static org.hyperledger.indy.sdk.ledger.Ledger.signAndSubmitRequest;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -52,25 +45,39 @@ public class NodeMonitoring {
     // 서버가 종료된 후, 새로 실행 시 이전에 사용했던 데이터들을 저장하고 있기 위한 메타데이터(Schema ID, Credential Definition ID ...)
     JSONObject myDidMetadata;
 
-    //String server_IP = "192.168.45.155";
-    String server_IP = "220.68.5.138";
+    String server_IP = "192.168.45.155";
+    //String server_IP = "220.68.5.138";
 
     int unreachableNodeCount = 0;
     int totalNodeCount = 0;
     int reachableNodeCount = 0;
+
+    String nodeName;
+    String verificationKey;
+    String blsPublicKey;
+    String proofBlsKey;
+
+    List<String> nodeList = new ArrayList<>();
+
+    int nodePort = 9711;
 
     public void ConnectIndyPool() throws Exception{
         System.out.println("Start Ledger");
 
         // Pool 연결 Protocol Version: 고정값
         // PROTOCOL_VERSION = 2;
+        System.out.println("Set Protocol");
         Pool.setProtocolVersion(PROTOCOL_VERSION).get();
         // /com.utils/PoolUtils.java: Pool 연결을 위한 Config File 생성 함수
         // DEFAULT_POOL_NAME = "issuer";
         // Pool Config 생성 API 사용: Pool.createPoolLedgerConfig(원장 이름, Pool Genesis Transaction File)
+        System.out.println("Set PoolName");
         this.poolName = PoolUtils.createPoolLedgerConfig();
+        System.out.println("poolName : " + poolName);
         // Pool 연결 API 사용: Pool.openPoolLedger(원장 이름, 연결 런타임 구성)
+        System.out.println("Open Ledger");
         this.pool = Pool.openPoolLedger(poolName, "{}").get();
+        System.out.println("pool : " + pool);
     }
 
     // wallet 사용
@@ -337,15 +344,7 @@ public class NodeMonitoring {
     }
 
     public void AddNode() throws Exception {
-        List<String> nodeFileList = Files.readAllLines(Paths.get(
-                FileUtils.getUserDirectoryPath() + "/NewNode_info.txt"));
-
-        System.out.println("nodeFileList : " + nodeFileList);
-
-        String nodeFileString = Files.readString(Paths.get(
-                FileUtils.getUserDirectoryPath() + "/NewNode_info.txt"));
-
-        System.out.println("nodeFileString : " + nodeFileString);
+        System.out.println("======== AddNode ========");
 
         Scanner nodeFileScanner = new Scanner(new File(
                 FileUtils.getUserDirectoryPath() + "/NewNode_info.txt"));
@@ -359,14 +358,40 @@ public class NodeMonitoring {
             nodeFileScannerList.add(str);
         }
 
-        System.out.println("nodeFileScannerList : " + nodeFileScannerList);
+        int index[] = {3, 26, 44, 52};
 
-        for (int i = 3; nodeFileScannerList.size() > i; i += 4)
-        {
-            System.out.println("i : " + i);
-            System.out.println(nodeFileScannerList.get(i));
-        }
+        nodeName = nodeFileScannerList.get(index[0]);
+        System.out.println("nodeName : " + nodeName);
+        verificationKey = nodeFileScannerList.get(index[1]);
+        System.out.println("verificationKey : " + verificationKey);
+        blsPublicKey = nodeFileScannerList.get(index[2]);
+        System.out.println("blsPublicKey : " + blsPublicKey);
+        proofBlsKey = nodeFileScannerList.get(index[3]);
+        System.out.println("ProofBlsKey : " + proofBlsKey);
 
+        CreateAndStoreMyDidResult createMyDidResult = Did.createAndStoreMyDid(this.wallet, "{}").get();
+        String addNodeDid = createMyDidResult.getDid();
+        String addNodeVerkey = createMyDidResult.getVerkey();
+        nodeList.add(addNodeDid);
+
+        String nymRequest = buildNymRequest(this.trusteeDid, addNodeDid, addNodeVerkey, null, "STEWARD").get();
+        String nymResponseJson = signAndSubmitRequest(this.pool, this.wallet, this.trusteeDid, nymRequest).get();
+
+        String dest = verificationKey;
+        String data = "{\"node_ip\":\"" + server_IP + "\"," +
+                "\"node_port\":" + nodePort++ + "," +
+                "\"client_ip\":\"" + server_IP + "\"," +
+                "\"client_port\":" + nodePort++ +"," +
+                "\"alias\":\"" + nodeName + "\"," +
+                "\"services\":[\"VALIDATOR\"]," +
+                "\"blskey\":\"" + blsPublicKey + "\"," +
+                "\"blskey_pop\":\"" + proofBlsKey + "\"" +
+                "}";
+
+        String getAddNodeRequest = buildNodeRequest(addNodeDid, dest, data).get();
+        nymResponseJson = signAndSubmitRequest(this.pool, this.wallet, addNodeDid, getAddNodeRequest).get();
+
+        System.out.println("nymResponseJson : " + nymResponseJson);
     }
 }
 
