@@ -45,8 +45,8 @@ public class NodeMonitoring {
     // 서버가 종료된 후, 새로 실행 시 이전에 사용했던 데이터들을 저장하고 있기 위한 메타데이터(Schema ID, Credential Definition ID ...)
     JSONObject myDidMetadata;
 
-    String server_IP = "192.168.45.155";
-    //String server_IP = "220.68.5.138";
+    //String server_IP = "192.168.45.155";
+    String server_IP = "220.68.5.138";
 
     int unreachableNodeCount = 0;
     int totalNodeCount = 0;
