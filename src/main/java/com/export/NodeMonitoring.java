@@ -1,6 +1,8 @@
+package com.export;
 
-import utils.PoolUtils;
+import com.export.utils.PoolUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.hyperledger.indy.sdk.ledger.Ledger;
 import org.hyperledger.indy.sdk.pool.Pool;
 import org.hyperledger.indy.sdk.did.Did;
@@ -9,14 +11,16 @@ import org.hyperledger.indy.sdk.did.DidResults.CreateAndStoreMyDidResult;
 import org.hyperledger.indy.sdk.wallet.Wallet;
 import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.simple.parser.JSONParser;
 
 import static org.hyperledger.indy.sdk.ledger.Ledger.*;
-import static utils.PoolUtils.PROTOCOL_VERSION;
-import static org.junit.Assert.assertEquals;
+import static com.export.utils.PoolUtils.PROTOCOL_VERSION;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,8 +49,8 @@ public class NodeMonitoring {
     // 서버가 종료된 후, 새로 실행 시 이전에 사용했던 데이터들을 저장하고 있기 위한 메타데이터(Schema ID, Credential Definition ID ...)
     JSONObject myDidMetadata;
 
-    //String server_IP = "192.168.45.155";
-    String server_IP = "220.68.5.138";
+    String server_IP = "192.168.45.155";
+    //String server_IP = "220.68.5.138";
 
     int unreachableNodeCount = 0;
     int totalNodeCount = 0;
@@ -61,21 +65,20 @@ public class NodeMonitoring {
 
     int nodePort = 9711;
 
+
     public void ConnectIndyPool() throws Exception{
         System.out.println("Start Ledger");
 
         // Pool 연결 Protocol Version: 고정값
         // PROTOCOL_VERSION = 2;
-        System.out.println("Set Protocol");
         Pool.setProtocolVersion(PROTOCOL_VERSION).get();
-        // /com.utils/PoolUtils.java: Pool 연결을 위한 Config File 생성 함수
+        System.out.println("Set Protocol");
+        // /com.com.export.utils/PoolUtils.java: Pool 연결을 위한 Config File 생성 함수
         // DEFAULT_POOL_NAME = "issuer";
         // Pool Config 생성 API 사용: Pool.createPoolLedgerConfig(원장 이름, Pool Genesis Transaction File)
-        System.out.println("Set PoolName");
         this.poolName = PoolUtils.createPoolLedgerConfig();
         System.out.println("poolName : " + poolName);
         // Pool 연결 API 사용: Pool.openPoolLedger(원장 이름, 연결 런타임 구성)
-        System.out.println("Open Ledger");
         this.pool = Pool.openPoolLedger(poolName, "{}").get();
         System.out.println("pool : " + pool);
     }
@@ -187,11 +190,8 @@ public class NodeMonitoring {
         String nymResponseJson = signAndSubmitRequest(this.pool, this.wallet, this.trusteeDid, nymRequest).get();
         JSONObject nymResponse = new JSONObject(nymResponseJson);
 
-        // 블록체인에 해당 DID가 제대로 등록됐는지 검증
-        assertEquals(this.myDid, nymResponse.getJSONObject("result").getJSONObject("txn").getJSONObject("data").getString("dest"));
-        assertEquals(this.myVerkey, nymResponse.getJSONObject("result").getJSONObject("txn").getJSONObject("data").getString("verkey"));
+        myDidMetadata = new JSONObject();
 
-        
         // did 메타데이터 정보 저장을 위해 작성
         this.myDidMetadata.put("myDid", this.myDid);
         this.myDidMetadata.put("trusteeDid", this.trusteeDid);
@@ -376,6 +376,7 @@ public class NodeMonitoring {
 
         String nymRequest = buildNymRequest(this.trusteeDid, addNodeDid, addNodeVerkey, null, "STEWARD").get();
         String nymResponseJson = signAndSubmitRequest(this.pool, this.wallet, this.trusteeDid, nymRequest).get();
+        System.out.println("nymResponseJson : " + nymResponseJson);
 
         String dest = verificationKey;
         String data = "{\"node_ip\":\"" + server_IP + "\"," +
@@ -392,6 +393,28 @@ public class NodeMonitoring {
         nymResponseJson = signAndSubmitRequest(this.pool, this.wallet, addNodeDid, getAddNodeRequest).get();
 
         System.out.println("nymResponseJson : " + nymResponseJson);
+    }
+
+    public void GetServerIP() throws Exception {
+        InetAddress server = InetAddress.getLocalHost();
+
+        server_IP = server.getHostAddress();
+
+        System.out.println("Server IP : " + server.getHostAddress());
+    }
+
+    public void GetResourceFile() throws Exception {
+
+        String something = IOUtils.toString(getClass().getResourceAsStream("/clientIP.json"), "UTF-8");
+        JSONObject clientInfo = new JSONObject(something);
+
+        String client_IP = clientInfo.getString("Client_IP");
+        int client_Port = clientInfo.getInt("Client_Port");
+
+        System.out.println("Client IP : " + client_IP);
+        System.out.println("Client Port : " + client_Port);
+
+
     }
 }
 
