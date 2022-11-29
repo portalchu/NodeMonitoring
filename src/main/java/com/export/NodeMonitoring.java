@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class NodeMonitoring {
+
+    // 풀 핸들러
     private Pool pool;
     // 지정한 블록체인 원장 이름
     String poolName;
@@ -46,15 +48,18 @@ public class NodeMonitoring {
     String myVerkey;
     // 입력을 위해 사용
     Scanner sc = new Scanner(System.in);
-    // 서버가 종료된 후, 새로 실행 시 이전에 사용했던 데이터들을 저장하고 있기 위한 메타데이터(Schema ID, Credential Definition ID ...)
+    // 서버가 종료된 후, 새로 실행 시 이전에 사용했던 데이터들을 저장하고 있기 위한 메타데이터
     JSONObject myDidMetadata;
 
-    String server_IP = "192.168.45.155";
-    //String server_IP = "220.68.5.138";
+    // 노드 모니터링의 서버 IP
+    String server_IP;
 
-    int unreachableNodeCount = 0;
-    int totalNodeCount = 0;
-    int reachableNodeCount = 0;
+    //
+    int unreachableNodeCount = -1;
+    int totalNodeCount = -1;
+    int reachableNodeCount = -1;
+
+    int checkCount = -1;
 
     String nodeName;
     String verificationKey;
@@ -288,6 +293,21 @@ public class NodeMonitoring {
         System.out.println("unreachableNodeCount : " + unreachableNodeCount);
         System.out.println("totalNodeCount : " + totalNodeCount);
         System.out.println("reachableNodeCount : " + reachableNodeCount);
+
+        if (totalNodeCount >= 3 * unreachableNodeCount + 1)
+            System.out.println("Pool has No Problem");
+        else
+            System.out.println("Pool has Problem");
+
+        System.out.println("input Check number : ");
+        checkCount = sc.nextInt();
+
+        int checkNodeCount = checkCount + unreachableNodeCount;
+
+        if (totalNodeCount >= 3 * checkNodeCount + 1)
+            System.out.println("Node Check No Problem");
+        else
+            System.out.println("Need Node Add");
     }
 
     public void RunIndyContainer() throws Exception {
@@ -405,7 +425,8 @@ public class NodeMonitoring {
 
     public void GetResourceFile() throws Exception {
 
-        String something = IOUtils.toString(getClass().getResourceAsStream("/clientIP.json"), "UTF-8");
+        String something = IOUtils.toString(
+                getClass().getResourceAsStream("/clientIP.json"), "UTF-8");
         JSONObject clientInfo = new JSONObject(something);
 
         String client_IP = clientInfo.getString("Client_IP");
@@ -414,6 +435,14 @@ public class NodeMonitoring {
         System.out.println("Client IP : " + client_IP);
         System.out.println("Client Port : " + client_Port);
 
+    }
+
+
+    public void NodeMonitoringAndAddNode() throws Exception {
+        // 1. 풀과 연결 확인
+        ConnectIndyPool();
+
+        // 2. 지갑 및 DID 생성
 
     }
 }
