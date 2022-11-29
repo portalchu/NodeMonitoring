@@ -1,4 +1,6 @@
 {
-    "Client_IP":"192.168.45.155",
-    "Client_Port":9721
+    "Node_Name": "Node1",
+    "Node_IP": "192.168.45.155",
+    "Node_Port": 9710,
+    "Node_Client_Port": 9721
 }

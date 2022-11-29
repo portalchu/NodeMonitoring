@@ -1,5 +1,6 @@
 package com.export;
 
+import com.export.node.NodeInfo;
 import com.export.utils.PoolUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -61,12 +62,15 @@ public class NodeMonitoring {
 
     int checkCount = -1;
 
+    NodeInfo nodeInfo;
     String nodeName;
     String verificationKey;
     String blsPublicKey;
     String proofBlsKey;
 
     List<String> nodeList = new ArrayList<>();
+
+    List<NodeInfo> nodeInfoList = new ArrayList<>();
 
     int nodePort = 9711;
 
@@ -313,6 +317,8 @@ public class NodeMonitoring {
     public void RunIndyContainer() throws Exception {
         System.out.println("==== RunIndyContainer ====");
 
+        NodeInfo _nodeInfo = nodeInfoList.get(0);
+
         String cmd;
 
         cmd = "ipconfig";
@@ -429,12 +435,18 @@ public class NodeMonitoring {
                 getClass().getResourceAsStream("/clientIP.json"), "UTF-8");
         JSONObject clientInfo = new JSONObject(something);
 
-        String client_IP = clientInfo.getString("Client_IP");
-        int client_Port = clientInfo.getInt("Client_Port");
+        String nodeName = clientInfo.getString("Node_Name");
+        String nodeIP = clientInfo.getString("Node_IP");
+        int nodePort = clientInfo.getInt("Node_Port");
+        int nodeClientPort = clientInfo.getInt("Node_Client_Port");
 
-        System.out.println("Client IP : " + client_IP);
-        System.out.println("Client Port : " + client_Port);
+        System.out.println("Node_Name : " + nodeName);
+        System.out.println("Node_IP : " + nodeIP);
+        System.out.println("Node_Port : " + nodePort);
+        System.out.println("Node_Client_Port : " + nodeClientPort);
 
+        nodeInfo = new NodeInfo(nodeName, nodeIP, nodePort, nodeClientPort);
+        nodeInfoList.add(nodeInfo);
     }
 
 

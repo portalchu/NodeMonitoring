@@ -30,7 +30,6 @@ public class Main {
                 System.out.println("7 : 추가 노드 생성");
                 System.out.println("8 : 노드 추가 요청");
                 System.out.println("9 : 리소스 읽기");
-                System.out.println("11 : 완전동작 테스트");
                 System.out.println("10 : 종료");
 
                 System.out.println("번호 입력 : ");
