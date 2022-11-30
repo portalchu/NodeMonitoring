@@ -1,78 +1,170 @@
 package com.export.node;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.*;
 
-import javax.annotation.processing.Generated;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "Node_Name",
-        "Node_IP",
-        "Node_Port",
-        "Node_Client_Port"
+        "Container_Name",
+        "Container_IP",
+        "Container_Start_Port",
+        "Container_End_Port",
+        "NodeList"
 })
-@Generated("jsonschema2pojo")
 public class NodeInfo {
 
-    @JsonProperty("nodeName")
-    private String nodeName;
+    @JsonProperty("Container_Name")
+    private String containerName;
+    @JsonProperty("Container_Image_Name")
+    private String containerImageName;
+    @JsonProperty("Container_IP")
+    private String containerIP;
+    @JsonProperty("Container_Start_Port")
+    private Integer containerStartPort;
+    @JsonProperty("Container_End_Port")
+    private Integer containerEndPort;
+    @JsonProperty("NodeList")
+    private List<Node> nodeList = null;
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("nodeIP")
-    private String nodeIP;
-
-    @JsonProperty("nodePort")
-    private int nodePort;
-
-    @JsonProperty("nodeClientPort")
-    private int nodeClientPort;
-
-    public NodeInfo(String _nodeName, String _nodeIP, int _nodePort, int _nodeClientPort) {
-        nodeName = _nodeName;
-        nodeIP = _nodeIP;
-        nodePort = _nodePort;
-        nodeClientPort = _nodeClientPort;
+    /**
+     * No args constructor for use in serialization
+     *
+     */
+    public NodeInfo() {
     }
 
-    @JsonProperty("Node_Name")
-    public String getNodeName() {
-        return nodeName;
+    /**
+     *
+     * @param containerName
+     * @param containerIP
+     * @param containerImageName
+     * @param containerEndPort
+     * @param nodeList
+     * @param containerStartPort
+     */
+    public NodeInfo(String containerName, String containerImageName, String containerIP,
+                    Integer containerStartPort, Integer containerEndPort, List<Node> nodeList) {
+        super();
+        this.containerName = containerName;
+        this.containerImageName = containerImageName;
+        this.containerIP = containerIP;
+        this.containerStartPort = containerStartPort;
+        this.containerEndPort = containerEndPort;
+        this.nodeList = nodeList;
     }
 
-    @JsonProperty("Node_Name")
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
+    @JsonProperty("Container_Name")
+    public String getContainerName() {
+        return containerName;
     }
 
-    @JsonProperty("Node_IP")
-    public String getNodeIP() {
-        return nodeIP;
+    @JsonProperty("Container_Name")
+    public void setContainerName(String containerName) {
+        this.containerName = containerName;
     }
 
-    @JsonProperty("Node_IP")
-    public void setNodeIP(String nodeIP) {
-        this.nodeIP = nodeIP;
+    @JsonProperty("Container_Image_Name")
+    public String getContainerImageName() {
+        return containerImageName;
     }
 
-    @JsonProperty("Node_Port")
-    public Integer getNodePort() {
-        return nodePort;
+    @JsonProperty("Container_Image_Name")
+    public void setContainerImageName(String containerImageName) {
+        this.containerImageName = containerImageName;
     }
 
-    @JsonProperty("Node_Port")
-    public void setNodePort(Integer nodePort) {
-        this.nodePort = nodePort;
+    @JsonProperty("Container_IP")
+    public String getContainerIP() {
+        return containerIP;
     }
 
-    @JsonProperty("Node_Client_Port")
-    public Integer getNodeClientPort() {
-        return nodeClientPort;
+    @JsonProperty("Container_IP")
+    public void setContainerIP(String containerIP) {
+        this.containerIP = containerIP;
     }
 
-    @JsonProperty("Node_Client_Port")
-    public void setNodeClientPort(Integer nodeClientPort) {
-        this.nodeClientPort = nodeClientPort;
+    @JsonProperty("Container_Start_Port")
+    public Integer getContainerStartPort() {
+        return containerStartPort;
+    }
+
+    @JsonProperty("Container_Start_Port")
+    public void setContainerStartPort(Integer containerStartPort) {
+        this.containerStartPort = containerStartPort;
+    }
+
+    @JsonProperty("Container_End_Port")
+    public Integer getContainerEndPort() {
+        return containerEndPort;
+    }
+
+    @JsonProperty("Container_End_Port")
+    public void setContainerEndPort(Integer containerEndPort) {
+        this.containerEndPort = containerEndPort;
+    }
+
+    @JsonProperty("NodeList")
+    public List<Node> getNodeList() {
+        return nodeList;
+    }
+
+    @JsonProperty("NodeList")
+    public void setNodeList(List<Node> nodeList) {
+        this.nodeList = nodeList;
+    }
+
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
+
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(NodeInfo.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("containerName");
+        sb.append('=');
+        sb.append(((this.containerName == null)?"<null>":this.containerName));
+        sb.append(',');
+        sb.append("containerIP");
+        sb.append('=');
+        sb.append(((this.containerIP == null)?"<null>":this.containerIP));
+        sb.append(',');
+        sb.append("containerStartPort");
+        sb.append('=');
+        sb.append(((this.containerStartPort == null)?"<null>":this.containerStartPort));
+        sb.append(',');
+        sb.append("containerEndPort");
+        sb.append('=');
+        sb.append(((this.containerEndPort == null)?"<null>":this.containerEndPort));
+        sb.append(',');
+        sb.append("nodeList");
+        sb.append('=');
+        sb.append(((this.nodeList == null)?"<null>":this.nodeList));
+        sb.append(',');
+        sb.append("additionalProperties");
+        sb.append('=');
+        sb.append(((this.additionalProperties == null)?"<null>":this.additionalProperties));
+        sb.append(',');
+        if (sb.charAt((sb.length()- 1)) == ',') {
+            sb.setCharAt((sb.length()- 1), ']');
+        } else {
+            sb.append(']');
+        }
+        return sb.toString();
     }
 
 }

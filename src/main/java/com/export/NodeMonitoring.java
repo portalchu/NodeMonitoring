@@ -1,7 +1,9 @@
 package com.export;
 
+import com.export.node.Node;
 import com.export.node.NodeInfo;
 import com.export.utils.PoolUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.hyperledger.indy.sdk.ledger.Ledger;
@@ -317,7 +319,9 @@ public class NodeMonitoring {
     public void RunIndyContainer() throws Exception {
         System.out.println("==== RunIndyContainer ====");
 
-        NodeInfo _nodeInfo = nodeInfoList.get(0);
+        NodeInfo nodeInfo = nodeInfoList.get(0);
+        List<Node> nodeList = nodeInfo.getNodeList();
+        Node node = nodeList.get(0);
 
         String cmd;
 
@@ -325,15 +329,17 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker run -itd --name indy-test1 -p " + server_IP + ":9711-9720:9711-9720 -e POOL='sandbox' indy-test";
+        String containerPort = nodeInfo.getContainerStartPort().toString() + "-" + nodeInfo.getContainerEndPort().toString();
+
+        cmd = "docker run -itd --name " + nodeInfo.getContainerName() + " -p " + server_IP + ":" + containerPort + ":" + containerPort + " -e POOL='sandbox' " + nodeInfo.getContainerImageName();
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker exec --user root indy-test1 sh -c \"cd etc/indy;sed -i \"s/None/$POOL/g\" indy_config.py\"";
+        cmd = "docker exec --user root " + nodeInfo.getContainerName() + " sh -c \"cd etc/indy;sed -i \"s/None/$POOL/g\" indy_config.py\"";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker exec --user root indy-test1 sh -c \"init_indy_node NewNode " + server_IP + " 9711 " + server_IP + " 9712 0000000000000000000000000NewNode >> NewNode_info.txt\"";
+        cmd = "docker exec --user root " + nodeInfo.getContainerName() + " sh -c \"init_indy_node " + nodeList.get(0).getNodeName() + server_IP + " 9711 " + server_IP + " 9712 0000000000000000000000000NewNode >> NewNode_info.txt\"";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
@@ -433,19 +439,16 @@ public class NodeMonitoring {
 
         String something = IOUtils.toString(
                 getClass().getResourceAsStream("/clientIP.json"), "UTF-8");
-        JSONObject clientInfo = new JSONObject(something);
 
-        String nodeName = clientInfo.getString("Node_Name");
-        String nodeIP = clientInfo.getString("Node_IP");
-        int nodePort = clientInfo.getInt("Node_Port");
-        int nodeClientPort = clientInfo.getInt("Node_Client_Port");
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        System.out.println("Node_Name : " + nodeName);
-        System.out.println("Node_IP : " + nodeIP);
-        System.out.println("Node_Port : " + nodePort);
-        System.out.println("Node_Client_Port : " + nodeClientPort);
+        nodeInfo = objectMapper.readValue(something, NodeInfo.class);
 
-        nodeInfo = new NodeInfo(nodeName, nodeIP, nodePort, nodeClientPort);
+        System.out.println("nodeInfo ContainerName : " + nodeInfo.getContainerName());
+        System.out.println("nodeInfo ContainerIP : " + nodeInfo.getContainerIP());
+        System.out.println("nodeInfo ContainerStartPort() : " + nodeInfo.getContainerStartPort());
+        System.out.println("nodeInfo ContainerEndPort() : " + nodeInfo.getContainerEndPort());
+
         nodeInfoList.add(nodeInfo);
     }
 
