@@ -321,6 +321,7 @@ public class NodeMonitoring {
 
         NodeInfo nodeInfo = nodeInfoList.get(0);
         List<Node> nodeList = nodeInfo.getNodeList();
+
         Node node = nodeList.get(0);
 
         String cmd;
@@ -339,7 +340,8 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker exec --user root " + nodeInfo.getContainerName() + " sh -c \"init_indy_node " + nodeList.get(0).getNodeName() + server_IP + " 9711 " + server_IP + " 9712 0000000000000000000000000NewNode >> NewNode_info.txt\"";
+        cmd = "docker exec --user root " + nodeInfo.getContainerName() + " sh -c \"init_indy_node " + node.getNodeName() +
+                " " + server_IP + " " + node.getNodePort() + " " + server_IP + " " + node.getNodeClientPort() + " >> " + node.getNodeName() + "_info.txt\"";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
@@ -347,17 +349,37 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker cp " + FileUtils.getUserDirectoryPath() + "/indy/sandbox/pool_transactions_genesis indy-test1:/var/lib/indy/sandbox";
+        cmd = "docker cp " + FileUtils.getUserDirectoryPath() + "/indy/sandbox/pool_transactions_genesis " + nodeInfo.getContainerName() + ":/var/lib/indy/sandbox";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker cp indy-test1:/NewNode_info.txt " + FileUtils.getUserDirectoryPath();
+        cmd = "docker cp " + nodeInfo.getContainerName() + ":/" + node.getNodeName() + "_info.txt " + FileUtils.getUserDirectoryPath();
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
-        cmd = "docker exec --user root -d indy-test1 sh -c \"start_indy_node NewNode 0.0.0.0 9711 0.0.0.0 9712\"";
+        cmd = "docker exec --user root -d " + nodeInfo.getContainerName() + " sh -c \"start_indy_node " + node.getNodeName()
+                + " 0.0.0.0 " + node.getNodePort() + " 0.0.0.0 " + node.getNodeClientPort() + "\"";
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
+
+        for(int i = 1; i < nodeList.size(); i++)
+        {
+            Node _node = nodeList.get(i);
+
+            cmd = "docker exec --user root " + nodeInfo.getContainerName() + " sh -c \"init_indy_node " + _node.getNodeName() +
+                    " " + server_IP + " " + _node.getNodePort() + " " + server_IP + " " + _node.getNodeClientPort() + " >> " + _node.getNodeName() + "_info.txt\"";
+            System.out.println("cmd : " + cmd);
+            RunWindowCmd(cmd);
+
+            cmd = "docker cp " + nodeInfo.getContainerName() + ":/" + _node.getNodeName() + "_info.txt " + FileUtils.getUserDirectoryPath();
+            System.out.println("cmd : " + cmd);
+            RunWindowCmd(cmd);
+
+            cmd = "docker exec --user root -d " + nodeInfo.getContainerName() + " sh -c \"start_indy_node " + _node.getNodeName()
+                    + " 0.0.0.0 " + _node.getNodePort() + " 0.0.0.0 " + _node.getNodeClientPort() + "\"";
+            System.out.println("cmd : " + cmd);
+            RunWindowCmd(cmd);
+        }
 
     }
 
@@ -375,11 +397,19 @@ public class NodeMonitoring {
         return line;
     }
 
-    public void AddNode() throws Exception {
+    public void AddNodeListCheck() throws Exception {
+        NodeInfo nodeInfo = nodeInfoList.get(0);
+        List<Node> nodeList = nodeInfo.getNodeList();
+
+        for (Node node : nodeList)
+            AddNode(node);
+    }
+
+    public void AddNode(Node node) throws Exception {
         System.out.println("======== AddNode ========");
 
         Scanner nodeFileScanner = new Scanner(new File(
-                FileUtils.getUserDirectoryPath() + "/NewNode_info.txt"));
+                FileUtils.getUserDirectoryPath() + "/" + node.getNodeName() + "_info.txt"));
 
         List<String> nodeFileScannerList = new ArrayList<>();
 
@@ -394,6 +424,10 @@ public class NodeMonitoring {
 
         nodeName = nodeFileScannerList.get(index[0]);
         System.out.println("nodeName : " + nodeName);
+
+        if (node.getNodeName().equals(nodeName))
+            System.out.println("node Name Clear!");
+
         verificationKey = nodeFileScannerList.get(index[1]);
         System.out.println("verificationKey : " + verificationKey);
         blsPublicKey = nodeFileScannerList.get(index[2]);
@@ -412,9 +446,9 @@ public class NodeMonitoring {
 
         String dest = verificationKey;
         String data = "{\"node_ip\":\"" + server_IP + "\"," +
-                "\"node_port\":" + nodePort++ + "," +
+                "\"node_port\":" + node.getNodePort() + "," +
                 "\"client_ip\":\"" + server_IP + "\"," +
-                "\"client_port\":" + nodePort++ +"," +
+                "\"client_port\":" + node.getNodeClientPort() +"," +
                 "\"alias\":\"" + nodeName + "\"," +
                 "\"services\":[\"VALIDATOR\"]," +
                 "\"blskey\":\"" + blsPublicKey + "\"," +
@@ -425,6 +459,9 @@ public class NodeMonitoring {
         nymResponseJson = signAndSubmitRequest(this.pool, this.wallet, addNodeDid, getAddNodeRequest).get();
 
         System.out.println("nymResponseJson : " + nymResponseJson);
+
+        Thread.sleep(10000);
+        System.out.println(node.getNodeName() + " Add Node Clear");
     }
 
     public void GetServerIP() throws Exception {

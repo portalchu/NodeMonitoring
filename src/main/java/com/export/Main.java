@@ -70,7 +70,7 @@ public class Main {
                         indyNodeManager.RunIndyContainer();
                         break;
                     case 8:
-                        indyNodeManager.AddNode();
+                        indyNodeManager.AddNodeListCheck();
                         break;
                     case 9:
                         indyNodeManager.GetResourceFile();

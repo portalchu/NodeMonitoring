@@ -2,24 +2,25 @@
     "Container_Name": "NodeContianer1",
     "Container_Image_Name": "indy-test",
     "Container_IP": "192.168.45.155",
-    "Container_Start_Port": 9710,
-    "Container_End_Port": 9719,
-    "NodeList": [{
-        "Node_Name": "Node1",
-        "Node_IP": "192.168.45.155",
-        "Node_Port": 9710,
-        "Node_Client_Port": 9711
-    },
+    "Container_Start_Port": 9721,
+    "Container_End_Port": 9730,
+    "NodeList": [
         {
-            "Node_Name": "Node2",
-            "Node_IP": "192.168.45.155",
-            "Node_Port": 9712,
-            "Node_Client_Port": 9713
+        "Node_Name": "NewNode1",
+        "Node_IP": "192.168.45.155",
+        "Node_Port": 9721,
+        "Node_Client_Port": 9722
         },
         {
-            "Node_Name": "Node3",
+            "Node_Name": "NewNode2",
             "Node_IP": "192.168.45.155",
-            "Node_Port": 9714,
-            "Node_Client_Port": 9715
+            "Node_Port": 9723,
+            "Node_Client_Port": 9724
+        },
+        {
+            "Node_Name": "NewNode3",
+            "Node_IP": "192.168.45.155",
+            "Node_Port": 9725,
+            "Node_Client_Port": 9726
         }]
 }
