@@ -25,10 +25,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class NodeMonitoring {
 
@@ -69,6 +66,7 @@ public class NodeMonitoring {
     NodeInfo nodeInfo;
     String nodeNameDefult = "NewNode";
     String monitoringDataDefultName = "Test";
+    int containerDefultNumber = 0;
     String containerDefultName = "MonitoringContainer";
     String verificationKey;
     String blsPublicKey;
@@ -81,8 +79,6 @@ public class NodeMonitoring {
     List<NodeInfo> nodeInfoList = new ArrayList<>();
 
     List<MonitoringData> monitoringDataList = new ArrayList<>();
-
-    int nodePort = 9711;
 
 
     public void ConnectIndyPool() throws Exception{
@@ -309,20 +305,46 @@ public class NodeMonitoring {
         System.out.println("Add MonitoringData");
     }
 
-    public void GetValidatorInfo() throws Exception {
+    public void CheckPoolNode() throws Exception {
+        int n;
+        n = sc.nextInt();
+
+        if (n < 1)
+        {
+            System.out.println("Input wrong Number");
+            return;
+        }
+
+        while (true)
+        {
+            if (!GetValidatorInfo(n)) {
+                RunIndyContainer();
+                AddNodeListCheck();
+            }
+
+            Thread.sleep(10000);
+        }
+    }
+
+    public boolean GetValidatorInfo(int n) throws Exception {
         System.out.println("==== getValidatorInfoObj ====");
 
         String getValidatorInfoRequest = Ledger.buildGetValidatorInfoRequest(trusteeDid).get();
-        String getValidatorInfoResponse = Ledger.signAndSubmitRequest(pool, wallet, trusteeDid, getValidatorInfoRequest).get();
+        String getValidatorInfoResponse = Ledger.signAndSubmitRequest(pool, wallet, trusteeDid,
+                getValidatorInfoRequest).get();
 
         JSONObject getValidatorInfoObj = new JSONObject(getValidatorInfoResponse);
 
-        System.out.println("getValidatorInfoObj : " + getValidatorInfoObj);
+        Set<String> keysets = getValidatorInfoObj.keySet();
 
-        for (int i = 1; i <= 4; i++) {
-            //Assert.assertFalse(new JSONObject(getValidatorInfoObj.getString(String.format("Node%s", i))).getJSONObject("result").isNull("data"));
-            JSONObject validatorInfo = new JSONObject(getValidatorInfoObj.getString(String.format("Node%s", i)));
-            System.out.println("validatorInfo : " + validatorInfo);
+        for (String key : keysets) {
+
+            System.out.println("key: " + key);
+            String validatorCheck = getValidatorInfoObj.getString(key);
+            if (validatorCheck.equals("timeout"))
+                continue;
+
+            JSONObject validatorInfo = new JSONObject(getValidatorInfoObj.getString(String.format(key)));
 
             JSONObject result = validatorInfo.getJSONObject("result");
             JSONObject data = result.getJSONObject("data");
@@ -337,20 +359,16 @@ public class NodeMonitoring {
         System.out.println("totalNodeCount : " + totalNodeCount);
         System.out.println("reachableNodeCount : " + reachableNodeCount);
 
-        if (totalNodeCount >= 3 * unreachableNodeCount + 1)
-            System.out.println("Pool has No Problem");
-        else
-            System.out.println("Pool has Problem");
+        int checkNodeCount = n + unreachableNodeCount;
 
-        System.out.println("input Check number : ");
-        checkCount = sc.nextInt();
-
-        int checkNodeCount = checkCount + unreachableNodeCount;
-
-        if (totalNodeCount >= 3 * checkNodeCount + 1)
+        if (totalNodeCount >= 3 * checkNodeCount + 1) {
             System.out.println("Node Check No Problem");
-        else
+            return true;
+        }
+        else {
             System.out.println("Need Node Add");
+            return false;
+        }
     }
 
     public boolean CheckMonitoringInfo() throws Exception {
@@ -369,8 +387,8 @@ public class NodeMonitoring {
     public void RunIndyContainer() throws Exception {
         System.out.println("==== RunIndyContainer ====");
 
-        String containerName = containerDefultName;
-        System.out.println("containerDefultName : " + containerDefultName);
+        String containerName = containerDefultName + containerDefultNumber++;
+        System.out.println("containerName : " + containerName);
         String containerIp = monitoringData.getComputerIP();
         System.out.println("containerIp : " + containerIp);
         String nodeName = nodeNameDefult;
@@ -441,6 +459,7 @@ public class NodeMonitoring {
 
         for(int i = 0; i < 2; i++)
         {
+            _node = new Node();
             nodePort += 2;
             nodeClientPort +=2;
             _nodeName = nodeName + nodeNumber++;
@@ -489,14 +508,24 @@ public class NodeMonitoring {
         return line;
     }
 
-    public void AddNodeListCheck() throws Exception {
+    public void NodeListCheck() throws Exception {
 
+        System.out.println("readyNodeList size : " + readyNodeList.size());
         for (Node node : readyNodeList)
         {
-            System.out.println("node Name : " + node.getNodeName());
-            AddNode(node);
-            readyNodeList.remove(node);
-            addNodeList.add(node);
+            System.out.println("NodeName : " + node.getNodeName());
+        }
+    }
+
+    public void AddNodeListCheck() throws Exception {
+
+        while (readyNodeList.size() != 0)
+        {
+            Node _node = readyNodeList.get(0);
+            System.out.println("NodeName : " + _node.getNodeName());
+            AddNode(_node);
+            addNodeList.add(_node);
+            readyNodeList.remove(_node);
         }
     }
 

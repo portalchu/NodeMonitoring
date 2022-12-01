@@ -4,7 +4,6 @@ import org.hyperledger.indy.sdk.IndyException;
 
 import java.util.Scanner;
 
-
 public class Main {
 
     public static NodeMonitoring indyNodeManager = new NodeMonitoring();
@@ -16,6 +15,7 @@ public class Main {
 
         String walletId;
         String walletPw;
+        int n;
 
         try {
             while (true)
@@ -31,6 +31,7 @@ public class Main {
                 System.out.println("8 : 노드 추가 요청");
                 System.out.println("9 : 리소스 읽기");
                 System.out.println("10 : 종료");
+                System.out.println("11 : 자동 시작");
 
                 System.out.println("번호 입력 : ");
                 num = sc.nextInt();
@@ -63,7 +64,8 @@ public class Main {
                         indyNodeManager.createDid();
                         break;
                     case 6:
-                        indyNodeManager.GetValidatorInfo();
+                        n = sc.nextInt();
+                        indyNodeManager.GetValidatorInfo(n);
                         break;
                     case 7:
                         indyNodeManager.RunIndyContainer();
@@ -75,6 +77,16 @@ public class Main {
                         indyNodeManager.GetResourceFile();
                         break;
                     case 10:
+                        return;
+                    case 11:
+                        indyNodeManager.CreateMonitoringData();
+                        indyNodeManager.ConnectIndyPool();
+                        walletId = "wallet" + (Math.random() * 1000);
+                        walletPw = "1234";
+                        indyNodeManager.createWallet(walletId, walletPw);
+                        indyNodeManager.createTrusteeDid();
+                        indyNodeManager.createDid();
+                        indyNodeManager.CheckPoolNode();
                         return;
                     default:
                         System.out.println("잘못된 입력 값");
