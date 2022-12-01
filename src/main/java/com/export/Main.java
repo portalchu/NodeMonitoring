@@ -20,7 +20,7 @@ public class Main {
         try {
             while (true)
             {
-                System.out.println("0 : 서버 IP 확인");
+                System.out.println("0 : 모니터링데이터설정");
                 System.out.println("1 : 풀과 연결");
                 System.out.println("2 : 지갑 생성 및 열기");
                 System.out.println("3 : 지갑 열기");
@@ -37,8 +37,7 @@ public class Main {
 
                 switch (num) {
                     case 0:
-                        indyNodeManager.GetServerIP();
-                        System.out.println("서버 IP : " + indyNodeManager.server_IP);
+                        indyNodeManager.CreateMonitoringData();
                         break;
                     case 1:
                         indyNodeManager.ConnectIndyPool();
