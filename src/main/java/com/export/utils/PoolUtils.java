@@ -10,7 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class PoolUtils {
-    private static final String DEFAULT_POOL_NAME = "issuer8";
+    private static final String DEFAULT_POOL_NAME = "issuer9";
     public static final int PROTOCOL_VERSION = 2;
 
 
@@ -40,8 +40,17 @@ public class PoolUtils {
         return file;
     }
 
+    private static File readGenesisTxnFile(String filename) throws Exception {
+        String path = FileUtils.getUserDirectoryPath() + filename;
+
+        File file = new File(path);
+
+        return file;
+    }
+
     public static String createPoolLedgerConfig() throws IOException, InterruptedException, java.util.concurrent.ExecutionException, IndyException {
-        File genesisTxnFile = createGenesisTxnFile("temp.txn");
+        //File genesisTxnFile = createGenesisTxnFile("temp.txn");
+        File genesisTxnFile = createGenesisTxnFile("pool_transactions_genesis");
         PoolJSONParameters.CreatePoolLedgerConfigJSONParameter createPoolLedgerConfigJSONParameter
                 = new PoolJSONParameters.CreatePoolLedgerConfigJSONParameter(genesisTxnFile.getAbsolutePath());
         System.out.println("PoolLedgerConfig : " + createPoolLedgerConfigJSONParameter);

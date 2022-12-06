@@ -290,7 +290,7 @@ public class NodeMonitoring {
         monitoringData.setContainerImage("indy-test");
         System.out.println("ContainerImage : " + monitoringData.getContainerImage());
 
-        monitoringData.setContainerStartPort(9730);
+        monitoringData.setContainerStartPort(9801);
         System.out.println("ContainerStartPort : " + monitoringData.getContainerStartPort());
 
         monitoringData.setContainerEndPort(0);
@@ -355,8 +355,10 @@ public class NodeMonitoring {
             reachableNodeCount = poolInfo.getInt("Reachable_nodes_count");
         }
 
+        System.out.println("check count : " + reachableNodeCount);
         System.out.println("unreachableNodeCount : " + unreachableNodeCount);
         System.out.println("totalNodeCount : " + totalNodeCount);
+        System.out.println("reachableNodeCount : " + reachableNodeCount);
         System.out.println("reachableNodeCount : " + reachableNodeCount);
 
         int checkNodeCount = n + unreachableNodeCount;
@@ -539,8 +541,6 @@ public class NodeMonitoring {
 
         while (nodeFileScanner.hasNext()) {
             String str = nodeFileScanner.next();
-            System.out.println(str);
-
             nodeFileScannerList.add(str);
         }
 
@@ -584,7 +584,7 @@ public class NodeMonitoring {
 
         System.out.println("nymResponseJson : " + nymResponseJson);
 
-        Thread.sleep(10000);
+        Thread.sleep(30000);
         System.out.println(node.getNodeName() + " Add Node Clear");
     }
 
