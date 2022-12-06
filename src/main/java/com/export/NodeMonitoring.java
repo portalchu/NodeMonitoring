@@ -322,7 +322,7 @@ public class NodeMonitoring {
                 AddNodeListCheck();
             }
 
-            Thread.sleep(10000);
+            Thread.sleep(60000);
         }
     }
 
@@ -584,7 +584,7 @@ public class NodeMonitoring {
 
         System.out.println("nymResponseJson : " + nymResponseJson);
 
-        Thread.sleep(30000);
+        Thread.sleep(300000);
         System.out.println(node.getNodeName() + " Add Node Clear");
     }
 
