@@ -67,7 +67,7 @@ public class NodeMonitoring {
     String nodeNameDefult = "NewNode";
     String monitoringDataDefultName = "Test";
     int containerDefultNumber = 0;
-    String containerDefultName = "MonitoringContainer";
+    String containerDefultName = "test";
     String verificationKey;
     String blsPublicKey;
     String proofBlsKey;
@@ -339,7 +339,6 @@ public class NodeMonitoring {
 
         for (String key : keysets) {
 
-            System.out.println("key: " + key);
             String validatorCheck = getValidatorInfoObj.getString(key);
             if (validatorCheck.equals("timeout"))
                 continue;
@@ -355,13 +354,15 @@ public class NodeMonitoring {
             reachableNodeCount = poolInfo.getInt("Reachable_nodes_count");
         }
 
-        System.out.println("check count : " + reachableNodeCount);
+        int checkNodeCount = n + unreachableNodeCount;
+
+        System.out.println("check count : " + n);
         System.out.println("unreachableNodeCount : " + unreachableNodeCount);
         System.out.println("totalNodeCount : " + totalNodeCount);
         System.out.println("reachableNodeCount : " + reachableNodeCount);
-        System.out.println("reachableNodeCount : " + reachableNodeCount);
-
-        int checkNodeCount = n + unreachableNodeCount;
+        System.out.println("add node number : " + addNodeList.size());
+        System.out.println(totalNodeCount + " >= 3 * " + unreachableNodeCount + " + 1");
+        System.out.println(totalNodeCount + " >= 3 * " + checkNodeCount + " + 1");
 
         if (totalNodeCount >= 3 * checkNodeCount + 1) {
             System.out.println("Node Check No Problem");
@@ -584,7 +585,7 @@ public class NodeMonitoring {
 
         System.out.println("nymResponseJson : " + nymResponseJson);
 
-        Thread.sleep(300000);
+        Thread.sleep(180000);
         System.out.println(node.getNodeName() + " Add Node Clear");
     }
 

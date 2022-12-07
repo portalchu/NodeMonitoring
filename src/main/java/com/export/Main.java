@@ -86,6 +86,7 @@ public class Main {
                         indyNodeManager.createWallet(walletId, walletPw);
                         indyNodeManager.createTrusteeDid();
                         indyNodeManager.createDid();
+                        System.out.println("Check node number : ");
                         indyNodeManager.CheckPoolNode();
                         return;
                     default:
