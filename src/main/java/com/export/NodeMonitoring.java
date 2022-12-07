@@ -398,7 +398,7 @@ public class NodeMonitoring {
         System.out.println("nodeName : " + nodeName);
         int nodeNumber = monitoringData.getNodeNumber();
         System.out.println("nodeNumber : " + nodeNumber);
-        int startPort = monitoringData.getContainerStartPort() + nodeNumber;
+        int startPort = monitoringData.getContainerStartPort() + nodeNumber * 2;
         System.out.println("startPort : " + startPort);
 
         int endPort = startPort + 5;
@@ -411,10 +411,6 @@ public class NodeMonitoring {
         System.out.println("nodeClientPort : " + nodeClientPort);
 
         String cmd;
-
-        cmd = "ipconfig";
-        System.out.println("cmd : " + cmd);
-        RunWindowCmd(cmd);
 
         String containerPort = startPort + "-" + endPort;
 
