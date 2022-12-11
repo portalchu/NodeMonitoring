@@ -40,7 +40,7 @@ public class PoolUtils {
         return file;
     }
 
-    private static File readGenesisTxnFile(String filename) throws Exception {
+    private static File readGenesisTxnFile(String filename) {
         String path = FileUtils.getUserDirectoryPath() + filename;
 
         File file = new File(path);
@@ -50,7 +50,7 @@ public class PoolUtils {
 
     public static String createPoolLedgerConfig() throws IOException, InterruptedException, java.util.concurrent.ExecutionException, IndyException {
         //File genesisTxnFile = createGenesisTxnFile("temp.txn");
-        File genesisTxnFile = createGenesisTxnFile("pool_transactions_genesis");
+        File genesisTxnFile = readGenesisTxnFile("pool_transactions_genesis");
         PoolJSONParameters.CreatePoolLedgerConfigJSONParameter createPoolLedgerConfigJSONParameter
                 = new PoolJSONParameters.CreatePoolLedgerConfigJSONParameter(genesisTxnFile.getAbsolutePath());
         System.out.println("PoolLedgerConfig : " + createPoolLedgerConfigJSONParameter);
