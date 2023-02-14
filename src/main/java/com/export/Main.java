@@ -1,5 +1,6 @@
 package com.export;
 
+import com.jcraft.jsch.JSchException;
 import org.hyperledger.indy.sdk.IndyException;
 
 import java.util.Scanner;
@@ -7,6 +8,7 @@ import java.util.Scanner;
 public class Main {
 
     public static NodeMonitoring indyNodeManager = new NodeMonitoring();
+    public static Connection connection;
 
     public static void main(String[] args) {
 
@@ -16,6 +18,8 @@ public class Main {
         String walletId;
         String walletPw;
         int n;
+
+        String command;
 
         try {
             while (true)
@@ -32,6 +36,9 @@ public class Main {
                 System.out.println("9 : 리소스 읽기");
                 System.out.println("10 : 종료");
                 System.out.println("11 : 자동 시작");
+                System.out.println("12 : ssh 연결 테스트");
+                System.out.println("13 : ssh 커맨드 실행");
+                System.out.println("14 : ssh 연결 종료");
 
                 System.out.println("번호 입력 : ");
                 num = sc.nextInt();
@@ -89,6 +96,27 @@ public class Main {
                         System.out.println("Check node number : ");
                         indyNodeManager.CheckPoolNode();
                         return;
+                    case 12:
+                        if (connection == null) {
+                            connection = new Connection("root", "220.68.5.139",
+                                    22, "umcl123456789");
+                        }
+                        connection.connectSSH();
+                        break;
+                    case 13:
+                        if (connection == null) {
+                            System.out.println("ssh 연결 안됨");
+                        }
+                        command = sc.nextLine();
+                        System.out.println("커맨드 입력");
+                        command = sc.nextLine();
+                        System.out.println("command : " + command);
+                        connection.command(command);
+                        break;
+                    case 14:
+                        if (connection == null) System.out.println("ssh 연결 안됨");
+                        connection.disConnectSSH();
+                        break;
                     default:
                         System.out.println("잘못된 입력 값");
                         break;

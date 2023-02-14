@@ -305,6 +305,35 @@ public class NodeMonitoring {
         System.out.println("Add MonitoringData");
     }
 
+    public void ReadMonitoringData() throws Exception {
+        System.out.println("==== ReadMonitoringData ====");
+
+        this.monitoringData = new MonitoringData();
+
+        monitoringData.setComputerName(monitoringDataDefultName);
+        System.out.println("ComputerName : " + monitoringData.getComputerName());
+
+        monitoringData.setComputerIP("220.68.5.139");
+        System.out.println("ComputerIP : " + monitoringData.getComputerIP());
+
+        monitoringData.setContainerImage("indy-test");
+        System.out.println("ContainerImage : " + monitoringData.getContainerImage());
+
+        monitoringData.setContainerStartPort(9801);
+        System.out.println("ContainerStartPort : " + monitoringData.getContainerStartPort());
+
+        monitoringData.setContainerEndPort(0);
+        System.out.println("ContainerEndPort : " + monitoringData.getContainerEndPort());
+
+        monitoringData.setNodeNumber(0);
+        System.out.println("NodeNumber : " + monitoringData.getNodeNumber());
+
+        monitoringData.setMaxNodeNumber(0);
+        System.out.println("MaxNodeNumber : " + monitoringData.getMaxNodeNumber());
+
+        System.out.println("Add MonitoringData");
+    }
+
     public void CheckPoolNode() throws Exception {
         int n;
         n = sc.nextInt();
