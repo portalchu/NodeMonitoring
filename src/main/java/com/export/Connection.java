@@ -80,9 +80,9 @@ public class Connection {
             channelExec.setCommand(command);
             channelExec.connect();
 
-            while (channelExec.isConnected()) {
-                Thread.sleep(100);
-            }
+                while (channelExec.isConnected()) {
+                    Thread.sleep(100);
+                }
 
             String responseString = new String(responseStream.toByteArray());
 
