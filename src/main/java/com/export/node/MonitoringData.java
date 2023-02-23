@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
+        "Pool_Name",
         "Computer_Name",
         "Computer_IP",
         "Container_Image",
@@ -21,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 })
 public class MonitoringData {
 
+    @JsonProperty("Pool_Name")
+    private String poolName;
     @JsonProperty("Computer_Name")
     private String computerName;
     @JsonProperty("Computer_IP")
@@ -47,6 +50,7 @@ public class MonitoringData {
 
     /**
      *
+     * @param poolName
      * @param computerIP
      * @param computerName
      * @param containerEndPort
@@ -55,9 +59,10 @@ public class MonitoringData {
      * @param maxNodeNumber
      * @param containerStartPort
      */
-    public MonitoringData(String computerName, String computerIP, String containerImage, Integer containerStartPort,
+    public MonitoringData(String poolName, String computerName, String computerIP, String containerImage, Integer containerStartPort,
                           Integer containerEndPort, Integer nodeNumber, Integer maxNodeNumber) {
         super();
+        this.poolName = poolName;
         this.computerName = computerName;
         this.computerIP = computerIP;
         this.containerImage = containerImage;
@@ -65,6 +70,16 @@ public class MonitoringData {
         this.containerEndPort = containerEndPort;
         this.nodeNumber = nodeNumber;
         this.maxNodeNumber = maxNodeNumber;
+    }
+
+    @JsonProperty("Pool_Name")
+    public String getPoolName() {
+        return poolName;
+    }
+
+    @JsonProperty("Pool_Name")
+    public void setPoolName(String poolName) {
+        this.poolName = poolName;
     }
 
     @JsonProperty("Computer_Name")
