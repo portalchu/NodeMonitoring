@@ -39,6 +39,7 @@ public class Main {
                 System.out.println("12 : ssh 연결 테스트");
                 System.out.println("13 : ssh 커맨드 실행");
                 System.out.println("14 : ssh 연결 종료");
+                System.out.println("15 : 외부 노드 컨트롤 테스트");
 
                 System.out.println("번호 입력 : ");
                 num = sc.nextInt();
@@ -114,6 +115,10 @@ public class Main {
                         connection.command(command);
                         break;
                     case 14:
+                        if (connection == null) System.out.println("ssh 연결 안됨");
+                        connection.disConnectSSH();
+                        break;
+                    case 15:
                         if (connection == null) System.out.println("ssh 연결 안됨");
                         connection.disConnectSSH();
                         break;
