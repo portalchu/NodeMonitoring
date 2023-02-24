@@ -5,6 +5,9 @@ import com.export.node.Node;
 import com.export.node.NodeInfo;
 import com.export.utils.PoolUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.hyperledger.indy.sdk.ledger.Ledger;
@@ -282,6 +285,11 @@ public class NodeMonitoring {
     public void StartNodeMonitoring() throws Exception {
         System.out.println("==== StartNodeMonitoring ====");
 
+        if (monitoringDataList == null) monitoringDataList = new ArrayList<>();
+        if (monitoringDataList.size() <= 0)
+        {
+
+        }
 
     }
 
@@ -328,10 +336,10 @@ public class NodeMonitoring {
         monitoringData.setComputerName(monitoringDataDefultName);
         System.out.println("ComputerName : " + monitoringData.getComputerName());
 
-        monitoringData.setComputerIP("220.68.5.140");
+        monitoringData.setComputerIP("220.68.5.139");
         System.out.println("ComputerIP : " + monitoringData.getComputerIP());
 
-        monitoringData.setContainerImage("indy-test");
+        monitoringData.setContainerImage("giry0612/indy-node-container");
         System.out.println("ContainerImage : " + monitoringData.getContainerImage());
 
         monitoringData.setContainerStartPort(9801);
@@ -352,12 +360,15 @@ public class NodeMonitoring {
     public void CheckPoolNode() throws Exception {
         System.out.println("==== Check Pool Node ====");
 
+        /*
         if(monitoringData.getComputerIP() != GetServerIP())
         {
             connection = new Connection("root", monitoringData.getComputerIP(),
                     22, "umcl123456789");
             connection.connectSSH();
         }
+
+         */
 
         System.out.println("Check node number : ");
         int n;
@@ -655,8 +666,30 @@ public class NodeMonitoring {
         nodeInfoList.add(nodeInfo);
     }
 
+    public void RunIndyContainerUbuntuTest() {
+        try {
+            ReadMonitoringData();
 
-    public void RunIndyContainerUbuntu() throws Exception {
+            Connection connection = new Connection("root", "220.68.5.139",
+                    22, "umcl123456789");
+
+            connection.connectSSHServer();
+
+            RunIndyContainerUbuntu(connection);
+
+        } catch (JSchException e) {
+            System.out.println("error");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("error");
+            e.printStackTrace();
+        } finally {
+            System.out.println("disConnectSSH");
+            connection.disConnectSSH();
+        }
+    }
+
+    public void RunIndyContainerUbuntu(Connection connection) throws Exception {
         System.out.println("==== RunIndyContainer ====");
 
         String poolName = monitoringData.getPoolName();
@@ -665,13 +698,6 @@ public class NodeMonitoring {
         System.out.println("containerName : " + containerName);
         String containerIp = monitoringData.getComputerIP();
         System.out.println("containerIp : " + containerIp);
-
-        if(containerIp != GetServerIP())
-        {
-            connection = new Connection("root", containerIp,
-                    22, "umcl123456789");
-        }
-
         String nodeName = nodeNameDefult;
         System.out.println("nodeName : " + nodeName);
         int nodeNumber = monitoringData.getNodeNumber();
@@ -694,23 +720,25 @@ public class NodeMonitoring {
 
         cmd = "docker run -itd --name " + containerName + " -p " + containerIp + ":" + containerPort + ":" + containerPort + " -e POOL='" + containerPort + "' " + monitoringData.getContainerImage();
         System.out.println("cmd : " + cmd);
-        RunWindowCmd(cmd);
+        connection.command(cmd);
 
-        cmd = "docker exec --user root " + containerName + " sh -c \"mkdir " + poolName + "\"";
+        cmd = "docker exec --user root " + containerName + " sh -c \"mkdir /var/lib/indy/" + poolName + "\"";
         System.out.println("cmd : " + cmd);
-        RunWindowCmd(cmd);
+        connection.command(cmd);
 
         cmd = "docker exec --user root " + containerName + " sh -c \"cd etc/indy;sed -i \"s/None/$POOL/g\" indy_config.py\"";
         System.out.println("cmd : " + cmd);
-        RunWindowCmd(cmd);
+        connection.command(cmd);
 
         cmd = "docker cp indy-test:/var/lib/indy " + FileUtils.getUserDirectoryPath();
         System.out.println("cmd : " + cmd);
-        RunWindowCmd(cmd);
+        connection.command(cmd);
 
         cmd = "docker cp " + FileUtils.getUserDirectoryPath() + "/indy/" + containerPort + "/pool_transactions_genesis " + containerName + ":/var/lib/indy/" + containerPort;
         System.out.println("cmd : " + cmd);
-        RunWindowCmd(cmd);
+        connection.command(cmd);
+
+        /*
 
         for(int i = 0; i < 3; i++)
         {
@@ -719,16 +747,16 @@ public class NodeMonitoring {
             cmd = "docker exec --user root " + containerName + " sh -c \"init_indy_node " + _nodeName +
                     " " + containerIp + " " + nodePort + " " + containerIp + " " + nodeClientPort + " >> " + _nodeName + "_info.txt\"";
             System.out.println("cmd : " + cmd);
-            RunWindowCmd(cmd);
+            connection.command(cmd);
 
             cmd = "docker cp " + containerName + ":/" + _nodeName + "_info.txt " + FileUtils.getUserDirectoryPath();
             System.out.println("cmd : " + cmd);
-            RunWindowCmd(cmd);
+            connection.command(cmd);
 
             cmd = "docker exec --user root -d " + containerName + " sh -c \"start_indy_node " + _nodeName
                     + " 0.0.0.0 " + nodePort + " 0.0.0.0 " + nodeClientPort + "\"";
             System.out.println("cmd : " + cmd);
-            RunWindowCmd(cmd);
+            connection.command(cmd);
 
             _node.setNodeName(_nodeName);
             System.out.println("_nodeName : " + _nodeName);
@@ -748,6 +776,8 @@ public class NodeMonitoring {
 
         monitoringData.setNodeNumber(nodeNumber);
         System.out.println("check nodeNumber : " + nodeNumber);
+
+         */
     }
 }
 

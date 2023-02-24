@@ -29,6 +29,17 @@ public class Connection {
         this.password = password;
     }
 
+    public Session connectSSHServer() throws Exception {
+        System.out.println("==== connect ssh ====");
+        session = new JSch().getSession(username, host, port);
+        session.setPassword(password);
+        session.setConfig("StrictHostKeyChecking", "no");
+        session.connect();
+        System.out.println("ssh session connect Success");
+
+        return session;
+    }
+
     public void connectSSH() {
         try {
             session = new JSch().getSession(username, host, port);

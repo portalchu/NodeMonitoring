@@ -119,8 +119,7 @@ public class Main {
                         connection.disConnectSSH();
                         break;
                     case 15:
-                        if (connection == null) System.out.println("ssh 연결 안됨");
-                        connection.disConnectSSH();
+                        indyNodeManager.RunIndyContainerUbuntuTest();
                         break;
                     default:
                         System.out.println("잘못된 입력 값");
