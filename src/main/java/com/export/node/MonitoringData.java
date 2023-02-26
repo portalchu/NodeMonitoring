@@ -18,7 +18,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
         "Container_Start_Port",
         "Container_End_Port",
         "Node_Number",
-        "Max_Node_Number"
+        "Max_Node_Number",
+        "Node_Info_Repository_Path"
 })
 public class MonitoringData {
 
@@ -38,6 +39,8 @@ public class MonitoringData {
     private Integer nodeNumber;
     @JsonProperty("Max_Node_Number")
     private Integer maxNodeNumber;
+    @JsonProperty("Node_Info_Repository_Path")
+    private String nodeInfoRepositoryPath;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -58,9 +61,10 @@ public class MonitoringData {
      * @param containerImage
      * @param maxNodeNumber
      * @param containerStartPort
+     * @param nodeInfoRepositoryPath
      */
     public MonitoringData(String poolName, String computerName, String computerIP, String containerImage, Integer containerStartPort,
-                          Integer containerEndPort, Integer nodeNumber, Integer maxNodeNumber) {
+                          Integer containerEndPort, Integer nodeNumber, Integer maxNodeNumber, String nodeInfoRepositoryPath) {
         super();
         this.poolName = poolName;
         this.computerName = computerName;
@@ -70,6 +74,7 @@ public class MonitoringData {
         this.containerEndPort = containerEndPort;
         this.nodeNumber = nodeNumber;
         this.maxNodeNumber = maxNodeNumber;
+        this.nodeInfoRepositoryPath = nodeInfoRepositoryPath;
     }
 
     @JsonProperty("Pool_Name")
@@ -150,6 +155,16 @@ public class MonitoringData {
     @JsonProperty("Max_Node_Number")
     public void setMaxNodeNumber(Integer maxNodeNumber) {
         this.maxNodeNumber = maxNodeNumber;
+    }
+
+    @JsonProperty("Node_Info_Repository_Path")
+    public String getNodeInfoRepositoryPath() {
+        return nodeInfoRepositoryPath;
+    }
+
+    @JsonProperty("Node_Info_Repository_Path")
+    public void setNodeInfoRepositoryPath(String nodeInfoRepositoryPath) {
+        this.nodeInfoRepositoryPath = nodeInfoRepositoryPath;
     }
 
     @JsonAnyGetter

@@ -113,6 +113,43 @@ public class Connection {
         }
     }
 
+    public void download(String path, String fileName, String userPath) throws Exception {
+        ChannelExec channelExec = null;
+        ByteArrayOutputStream responseStream = null;
+        //BufferedReader commandReader = null;
+        try {
+            channelExec = (ChannelExec) session.openChannel("exec");
+
+            //commandReader = new BufferedReader(new InputStreamReader(channelExec.getInputStream()));
+
+            responseStream = new ByteArrayOutputStream();
+            channelExec.setOutputStream(responseStream);
+
+            channelExec.setCommand(command);
+            channelExec.connect();
+
+            while (channelExec.isConnected()) {
+                Thread.sleep(100);
+            }
+
+            String responseString = new String(responseStream.toByteArray());
+
+            /*
+            String commandLine = commandReader.readLine();
+            if(commandLine == null || commandLine.equals("")) {
+                commandLine = "Fail";
+            }
+            System.out.println(" command Result String -> [ " + commandLine + " ] ");
+             */
+            System.out.println(responseString);
+
+        } finally {
+            responseStream.close();
+            //commandReader.close();
+            channelExec.disconnect();
+        }
+    }
+
     public void disConnectSSH() {
         System.out.println("ssh session disConnect");
         if (session != null) session.disconnect();

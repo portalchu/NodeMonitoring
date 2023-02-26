@@ -41,7 +41,8 @@ public class PoolUtils {
     }
 
     private static File readGenesisTxnFile(String filename) {
-        String path = FileUtils.getUserDirectoryPath() + filename;
+        // Window
+        String path = FileUtils.getUserDirectoryPath() + "\\" + filename;
 
         File file = new File(path);
 

@@ -31,7 +31,7 @@ public class Main {
                 System.out.println("4 : Trustee DID 생성");
                 System.out.println("5 : DID 생성");
                 System.out.println("6 : 풀 노드 상태 확인");
-                System.out.println("7 : 추가 노드 생성");
+                System.out.println("7 : 외부 노드 테스트");
                 System.out.println("8 : 노드 추가 요청");
                 System.out.println("9 : 리소스 읽기");
                 System.out.println("10 : 종료");
@@ -39,7 +39,6 @@ public class Main {
                 System.out.println("12 : ssh 연결 테스트");
                 System.out.println("13 : ssh 커맨드 실행");
                 System.out.println("14 : ssh 연결 종료");
-                System.out.println("15 : 외부 노드 컨트롤 테스트");
 
                 System.out.println("번호 입력 : ");
                 num = sc.nextInt();
@@ -73,10 +72,17 @@ public class Main {
                         break;
                     case 6:
                         n = sc.nextInt();
-                        indyNodeManager.GetValidatorInfo(n);
+                        //indyNodeManager.GetValidatorInfo(n);
                         break;
                     case 7:
-                        indyNodeManager.RunIndyContainer();
+                        indyNodeManager.ConnectIndyPool();
+                        walletId = "wallet" + (Math.random() * 1000);
+                        walletPw = "1234";
+                        indyNodeManager.createWallet(walletId, walletPw);
+                        indyNodeManager.createTrusteeDid();
+                        indyNodeManager.createDid();
+                        System.out.println("Check node number : ");
+                        indyNodeManager.StartNodeMonitoring();
                         break;
                     case 8:
                         indyNodeManager.AddNodeListCheck();
@@ -95,7 +101,7 @@ public class Main {
                         indyNodeManager.createTrusteeDid();
                         indyNodeManager.createDid();
                         System.out.println("Check node number : ");
-                        indyNodeManager.CheckPoolNode();
+                        //indyNodeManager.CheckPoolNode();
                         return;
                     case 12:
                         if (connection == null) {
@@ -117,9 +123,6 @@ public class Main {
                     case 14:
                         if (connection == null) System.out.println("ssh 연결 안됨");
                         connection.disConnectSSH();
-                        break;
-                    case 15:
-                        indyNodeManager.RunIndyContainerUbuntuTest();
                         break;
                     default:
                         System.out.println("잘못된 입력 값");
