@@ -462,6 +462,7 @@ public class NodeMonitoring {
                 Connection connection = new Connection("root", monitoringData.getComputerIP(),
                         22, "umcl123456789");
                 connection.connectSSHServer();
+                connection.connectChannelSftp();
 
                 RunIndyContainerUbuntu(monitoringData, connection);
                 AddNodeListCheck();
@@ -558,7 +559,8 @@ public class NodeMonitoring {
             _nodeName = nodeName + nodeNumber++;
 
             cmd = "docker exec --user root " + containerName + " sh -c \"init_indy_node " + _nodeName +
-                    " " + containerIp + " " + nodePort + " " + containerIp + " " + nodeClientPort + " >> " + _nodeName + "_info.txt\"";
+                    " " + containerIp + " " + nodePort + " " + containerIp + " " + nodeClientPort + " >> "
+                    + _nodeName + "_info.txt\"";
             System.out.println("cmd : " + cmd);
             RunWindowCmd(cmd);
 
@@ -616,6 +618,12 @@ public class NodeMonitoring {
         {
             Node _node = readyNodeList.get(0);
             System.out.println("NodeName : " + _node.getNodeName());
+
+            String path = "/root";
+            String fileName = _node.getNodeName() + "_info.txt";
+            String userPath = "./";
+            connection.download(path, fileName, userPath);
+
             AddNode(_node);
             addNodeList.add(_node);
             readyNodeList.remove(_node);

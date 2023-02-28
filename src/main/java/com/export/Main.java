@@ -1,8 +1,12 @@
 package com.export;
 
 import com.jcraft.jsch.JSchException;
+import jdk.javadoc.internal.doclets.toolkit.Resources;
 import org.hyperledger.indy.sdk.IndyException;
 
+import java.io.InputStream;
+import java.io.Reader;
+import java.net.URL;
 import java.util.Scanner;
 
 public class Main {
@@ -30,8 +34,8 @@ public class Main {
                 System.out.println("3 : 지갑 열기");
                 System.out.println("4 : Trustee DID 생성");
                 System.out.println("5 : DID 생성");
-                System.out.println("6 : 풀 노드 상태 확인");
-                System.out.println("7 : 외부 노드 테스트");
+                System.out.println("@6 : ssh 파일 다운 테스트");
+                System.out.println("@7 : 외부 노드 테스트");
                 System.out.println("8 : 노드 추가 요청");
                 System.out.println("9 : 리소스 읽기");
                 System.out.println("10 : 종료");
@@ -71,9 +75,25 @@ public class Main {
                         indyNodeManager.createDid();
                         break;
                     case 6:
-                        n = sc.nextInt();
-                        //indyNodeManager.GetValidatorInfo(n);
-                        break;
+                        try {
+                            if (connection == null) {
+                                connection = new Connection("root", "220.68.5.139",
+                                        22, "umcl123456789");
+                            }
+                            connection.connectSSHServer();
+                            connection.connectChannelSftp();
+
+
+
+
+                            String path = "/root";
+                            String fileName = "pool_transactions_genesis";
+                            String userPath = "./";
+                            connection.download(path, fileName, userPath);
+
+                        } finally {
+                            connection.disConnectSSH();
+                        }
                     case 7:
                         indyNodeManager.ConnectIndyPool();
                         walletId = "wallet" + (Math.random() * 1000);

@@ -1,14 +1,8 @@
 package com.export;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.Scanner;
 
 public class Connection {
@@ -19,6 +13,8 @@ public class Connection {
 
     private Session session;
     private ChannelExec channelExec;
+    private Channel channel;
+    private ChannelSftp channelSftp;
 
     Scanner sc = new Scanner(System.in);
 
@@ -38,6 +34,14 @@ public class Connection {
         System.out.println("ssh session connect Success");
 
         return session;
+    }
+
+    public void connectChannelSftp() throws Exception {
+        System.out.println("==== connect Channel Sftp ====");
+        channel = session.openChannel("sftp");
+        channel.connect();
+
+        channelSftp = (ChannelSftp) channel;
     }
 
     public void connectSSH() {
@@ -114,39 +118,26 @@ public class Connection {
     }
 
     public void download(String path, String fileName, String userPath) throws Exception {
-        ChannelExec channelExec = null;
-        ByteArrayOutputStream responseStream = null;
-        //BufferedReader commandReader = null;
+        System.out.println("==== download ====");
+        InputStream in = null;
+        FileOutputStream out = null;
         try {
-            channelExec = (ChannelExec) session.openChannel("exec");
+            channelSftp.cd(path);
+            in = channelSftp.get(fileName);
 
-            //commandReader = new BufferedReader(new InputStreamReader(channelExec.getInputStream()));
+            String fullpath = userPath + File.separator + fileName;
+            System.out.println("fullpath : " + fullpath);
 
-            responseStream = new ByteArrayOutputStream();
-            channelExec.setOutputStream(responseStream);
+            out = new FileOutputStream(new File(fullpath));
+            int i;
 
-            channelExec.setCommand(command);
-            channelExec.connect();
-
-            while (channelExec.isConnected()) {
-                Thread.sleep(100);
+            while ((i = in.read()) != -1) {
+                out.write(i);
             }
-
-            String responseString = new String(responseStream.toByteArray());
-
-            /*
-            String commandLine = commandReader.readLine();
-            if(commandLine == null || commandLine.equals("")) {
-                commandLine = "Fail";
-            }
-            System.out.println(" command Result String -> [ " + commandLine + " ] ");
-             */
-            System.out.println(responseString);
 
         } finally {
-            responseStream.close();
-            //commandReader.close();
-            channelExec.disconnect();
+            out.close();
+            in.close();
         }
     }
 
