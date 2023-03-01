@@ -4,6 +4,7 @@ import com.jcraft.jsch.JSchException;
 import jdk.javadoc.internal.doclets.toolkit.Resources;
 import org.hyperledger.indy.sdk.IndyException;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
@@ -83,18 +84,19 @@ public class Main {
                             connection.connectSSHServer();
                             connection.connectChannelSftp();
 
-
-
-
                             String path = "/root";
                             String fileName = "pool_transactions_genesis";
-                            String userPath = "./";
+                            //String userPath = Main.class.getClassLoader().getResource("clientIP.json").getPath();
+                            String userPath = new File("").getAbsolutePath();
+                            System.out.println("userPath : " + userPath);
                             connection.download(path, fileName, userPath);
 
                         } finally {
                             connection.disConnectSSH();
                         }
+
                     case 7:
+                        System.out.println("case 7");
                         indyNodeManager.ConnectIndyPool();
                         walletId = "wallet" + (Math.random() * 1000);
                         walletPw = "1234";
