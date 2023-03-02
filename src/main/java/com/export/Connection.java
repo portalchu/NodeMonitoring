@@ -96,7 +96,7 @@ public class Connection {
             channelExec.connect();
 
                 while (channelExec.isConnected()) {
-                    Thread.sleep(100);
+                    Thread.sleep(3000);
                 }
 
             String responseString = new String(responseStream.toByteArray());

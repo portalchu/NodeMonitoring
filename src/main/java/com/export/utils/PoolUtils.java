@@ -41,16 +41,50 @@ public class PoolUtils {
     }
 
     private static File readGenesisTxnFile(String filename) {
+
         // Window
         String path = FileUtils.getUserDirectoryPath() + "\\" + filename;
 
         File file = new File(path);
 
-        return file;
+        if (file != null) return file;
+
+        // Centos
+        path = new File("").getAbsolutePath() + "\\" + filename;
+
+        file = new File(path);
+
+        if (file != null) return file;
+
+        return null;
+    }
+
+    public static boolean checkGenesisTxnFile(String filename) {
+
+        String path = new File("").getAbsolutePath() + "\\" + filename;
+
+        File file = new File(path);
+
+        if (file != null) return true;
+
+        path = FileUtils.getUserDirectoryPath() + "\\" + filename;
+
+        file = new File(path);
+
+        if (file != null) return true;
+
+        return false;
     }
 
     public static String createPoolLedgerConfig() throws IOException, InterruptedException, java.util.concurrent.ExecutionException, IndyException {
         //File genesisTxnFile = createGenesisTxnFile("temp.txn");
+
+        if (!checkGenesisTxnFile("pool_transactions_genesis"))
+        {
+            System.out.println("there no transactions file!");
+            return null;
+        }
+
         File genesisTxnFile = readGenesisTxnFile("pool_transactions_genesis");
         PoolJSONParameters.CreatePoolLedgerConfigJSONParameter createPoolLedgerConfigJSONParameter
                 = new PoolJSONParameters.CreatePoolLedgerConfigJSONParameter(genesisTxnFile.getAbsolutePath());
