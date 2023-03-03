@@ -292,8 +292,8 @@ public class NodeMonitoring {
         if (monitoringDataList.size() <= 0)
         {
             //Test
-            //monitoringDataList.add(ReadMonitoringData());
-            monitoringDataList.add(CreateMonitoringData());
+            monitoringDataList.add(ReadMonitoringData());
+            //monitoringDataList.add(CreateMonitoringData());
         }
 
         System.out.println("Check node number : ");
@@ -313,6 +313,7 @@ public class NodeMonitoring {
                 GetValidatorInfo(monitoringData, n);
                 Thread.sleep(60000);
             }
+            System.out.println("monitoring node is full");
         }
     }
 
@@ -421,6 +422,7 @@ public class NodeMonitoring {
 
     public void GetValidatorInfo(MonitoringData monitoringData, int n) throws Exception {
         System.out.println("==== getValidatorInfoObj ====");
+        Connection connection = null;
 
         String getValidatorInfoRequest = Ledger.buildGetValidatorInfoRequest(trusteeDid).get();
         String getValidatorInfoResponse = Ledger.signAndSubmitRequest(pool, wallet, trusteeDid,
@@ -468,14 +470,14 @@ public class NodeMonitoring {
 
                 if (!monitoringData.getComputerIP().equals(GetServerIP()))
                 {
-                    Connection connection = new Connection("root", monitoringData.getComputerIP(),
+                    System.out.println("Connection Ip is " + monitoringData.getComputerIP());
+                    connection = new Connection("root", monitoringData.getComputerIP(),
                             22, "umcl123456789");
                     connection.connectSSHServer();
                     connection.connectChannelSftp();
-
                 }
-                //RunIndyContainerUbuntu(monitoringData, connection);
-                RunIndyContainerWindow(monitoringData, connection);
+                RunIndyContainerUbuntu(monitoringData, connection);
+                //RunIndyContainerWindow(monitoringData, connection);
                 Thread.sleep(60000);
                 AddNodeListCheck();
 
@@ -487,7 +489,7 @@ public class NodeMonitoring {
                 e.printStackTrace();
             } finally {
                 System.out.println("==== disConnectSSH ====");
-                connection.disConnectSSH();
+                if (connection != null) connection.disConnectSSH();
             }
         }
     }
@@ -580,6 +582,12 @@ public class NodeMonitoring {
 
     public void RunIndyContainerUbuntu(MonitoringData monitoringData, Connection connection) throws Exception {
         System.out.println("==== RunIndyContainer ====");
+
+        if (connection == null)
+        {
+            System.out.println("connection is null");
+            return;
+        }
 
         String poolName = monitoringData.getPoolName();
         System.out.println("poolName : " + poolName);
