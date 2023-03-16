@@ -39,12 +39,7 @@ public class Main {
                 System.out.println("@7 : 외부 노드 테스트");
                 System.out.println("8 : 노드 추가 요청");
                 System.out.println("9 : 리소스 읽기");
-                System.out.println("10 : 종료");
-                System.out.println("11 : 자동 시작");
-                System.out.println("12 : ssh 연결 테스트");
-                System.out.println("13 : ssh 커맨드 실행");
-                System.out.println("14 : ssh 연결 종료");
-                System.out.println("15 : 외부 노드 컨트롤 테스트");
+                System.out.println("10 : 노드 모니터링 시스템 실행");
 
                 System.out.println("번호 입력 : ");
                 num = sc.nextInt();
@@ -113,42 +108,15 @@ public class Main {
                         indyNodeManager.GetResourceFile();
                         break;
                     case 10:
-                        return;
-                    case 11:
-                        indyNodeManager.CreateMonitoringData();
+                        System.out.println("case 7");
                         indyNodeManager.ConnectIndyPool();
                         walletId = "wallet" + (Math.random() * 1000);
                         walletPw = "1234";
                         indyNodeManager.createWallet(walletId, walletPw);
                         indyNodeManager.createTrusteeDid();
                         indyNodeManager.createDid();
-                        System.out.println("Check node number : ");
-                        //indyNodeManager.CheckPoolNode();
+                        indyNodeManager.StartNodeMonitoring();
                         return;
-                    case 12:
-                        if (connection == null) {
-                            connection = new Connection("root", "220.68.5.139",
-                                    22, "umcl123456789");
-                        }
-                        connection.connectSSH();
-                        break;
-                    case 13:
-                        if (connection == null) {
-                            System.out.println("ssh 연결 안됨");
-                        }
-                        command = sc.nextLine();
-                        System.out.println("커맨드 입력");
-                        command = sc.nextLine();
-                        System.out.println("command : " + command);
-                        connection.command(command);
-                        break;
-                    case 14:
-                        if (connection == null) System.out.println("ssh 연결 안됨");
-                        connection.disConnectSSH();
-                        break;
-                    case 15:
-
-                        break;
                     default:
                         System.out.println("잘못된 입력 값");
                         break;
