@@ -5,8 +5,10 @@ import com.jcraft.jsch.*;
 import java.io.*;
 import java.util.Scanner;
 
+// 외부 컴퓨터 조작을 위한 클래스
+// 기본적으로 ssh 및 scp를 사용하므로 각각 설치 필요
 public class Connection {
-    private String username;
+    private String userName;
     private String host;
     private int port;
     private String password;
@@ -18,16 +20,24 @@ public class Connection {
 
     Scanner sc = new Scanner(System.in);
 
-    Connection(String username, String host, int port, String password) {
-        this.username = username;
+    // Connection 생성자
+    // @입력 값
+    // userName: 연결할 컴퓨터의 사용자 이름
+    // host: 연결할 컴퓨터의 IP 주소
+    // port: 연결할 컴퓨터의 Port 번호 (기본 22 필요)
+    // passwork: ssh 연결을 위한 비밀번호
+    Connection(String userName, String host, int port, String password) {
+        this.userName = userName;
         this.host = host;
         this.port = port;
         this.password = password;
     }
 
+    // SSH 연결
+    // Connection 생성자에서 입력된 값을 통해 SSH Server와 연결
     public Session connectSSHServer() throws Exception {
         System.out.println("==== connect ssh ====");
-        session = new JSch().getSession(username, host, port);
+        session = new JSch().getSession(userName, host, port);
         session.setPassword(password);
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();
@@ -44,42 +54,9 @@ public class Connection {
         channelSftp = (ChannelSftp) channel;
     }
 
-    public void connectSSH() {
-        try {
-            session = new JSch().getSession(username, host, port);
-            session.setPassword(password);
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
-            System.out.println("ssh session connect Success");
-
-            while (true) {
-                if (session == null) {
-                    System.out.println("ssh session is null");
-                    break;
-                }
-
-                String command = sc.nextLine();
-                System.out.println("커맨드 입력");
-                command = sc.nextLine();
-                System.out.println("command : " + command);
-
-                if(command == null || command.trim().equals("")) {
-                    System.out.println("ssh command is null");
-                    break;
-                }
-
-                command(command);
-            }
-
-        } catch (JSchException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            this.disConnectSSH();
-        }
-    }
-
+    // command 실행문
+    // @입력 값
+    // command: 외부 컴퓨터에서 실행할 명령어 입력
     public void command(String command) throws Exception {
         ChannelExec channelExec = null;
         ByteArrayOutputStream responseStream = null;
@@ -117,6 +94,12 @@ public class Connection {
         }
     }
 
+    // scp를 사용한 파일 다운로드
+    // scp를 사용하여 외부 컴퓨터에서 특정 파일을 요청해 다운로드
+    // @입력 값
+    // path: 외부 컴퓨터에서 실행할 명령어 입력
+    // fileName: 외부 컴퓨터에서 실행할 명령어 입력
+    // userPath: 
     public void download(String path, String fileName, String userPath) throws Exception {
         System.out.println("==== download ====");
         InputStream in = null;

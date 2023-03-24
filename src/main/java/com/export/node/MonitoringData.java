@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+// 외부 컴퓨터 사용을 위한 모니터링 데이터 셋
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "Pool_Name",
@@ -19,7 +20,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
         "Container_End_Port",
         "Node_Number",
         "Max_Node_Number",
-        "Node_Info_Repository_Path"
+        "SSH_User_Name",
+        "SSH_Host_IP",
+        "SSH_Port_Number",
+        "SSH_Password"
 })
 public class MonitoringData {
 
@@ -39,8 +43,14 @@ public class MonitoringData {
     private Integer nodeNumber;
     @JsonProperty("Max_Node_Number")
     private Integer maxNodeNumber;
-    @JsonProperty("Node_Info_Repository_Path")
-    private String nodeInfoRepositoryPath;
+    @JsonProperty("SSH_User_Name")
+    private String sshUserName;
+    @JsonProperty("SSH_Host_IP")
+    private String sshHostIp;
+    @JsonProperty("SSH_Port_Number")
+    private Integer sshPortNumber;
+    @JsonProperty("SSH_Password")
+    private String sshPassword;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -61,10 +71,15 @@ public class MonitoringData {
      * @param containerImage
      * @param maxNodeNumber
      * @param containerStartPort
-     * @param nodeInfoRepositoryPath
+     * @param sshUserName
+     * @param sshHostIp
+     * @param sshPortNumber
+     * @param sshPassword
      */
-    public MonitoringData(String poolName, String computerName, String computerIP, String containerImage, Integer containerStartPort,
-                          Integer containerEndPort, Integer nodeNumber, Integer maxNodeNumber, String nodeInfoRepositoryPath) {
+    public MonitoringData(String poolName, String computerName, String computerIP, String containerImage,
+                          Integer containerStartPort, Integer containerEndPort, Integer nodeNumber,
+                          Integer maxNodeNumber, String sshUserName, String sshHostIp, Integer sshPortNumber,
+                          String sshPassword) {
         super();
         this.poolName = poolName;
         this.computerName = computerName;
@@ -74,7 +89,10 @@ public class MonitoringData {
         this.containerEndPort = containerEndPort;
         this.nodeNumber = nodeNumber;
         this.maxNodeNumber = maxNodeNumber;
-        this.nodeInfoRepositoryPath = nodeInfoRepositoryPath;
+        this.sshUserName = sshUserName;
+        this.sshHostIp = sshHostIp;
+        this.sshPortNumber = sshPortNumber;
+        this.sshPassword = sshPassword;
     }
 
     @JsonProperty("Pool_Name")
@@ -156,15 +174,41 @@ public class MonitoringData {
     public void setMaxNodeNumber(Integer maxNodeNumber) {
         this.maxNodeNumber = maxNodeNumber;
     }
-
-    @JsonProperty("Node_Info_Repository_Path")
-    public String getNodeInfoRepositoryPath() {
-        return nodeInfoRepositoryPath;
+    @JsonProperty("SSH_User_Name")
+    public String getSshUserName() {
+        return sshUserName;
     }
 
-    @JsonProperty("Node_Info_Repository_Path")
-    public void setNodeInfoRepositoryPath(String nodeInfoRepositoryPath) {
-        this.nodeInfoRepositoryPath = nodeInfoRepositoryPath;
+    @JsonProperty("SSH_User_Name")
+    public void setSshUserName(String sshUserName) {
+        this.sshUserName = sshUserName;
+    }
+    @JsonProperty("SSH_Host_IP")
+    public String getSshHostIp() {
+        return sshHostIp;
+    }
+
+    @JsonProperty("SSH_Host_IP")
+    public void setSshHostIp(String sshHostIp) {
+        this.sshHostIp = sshHostIp;
+    }
+    @JsonProperty("SSH_Port_Number")
+    public Integer getSshPortNumber() {
+        return sshPortNumber;
+    }
+
+    @JsonProperty("SSH_Port_Number")
+    public void setSshPortNumber(Integer sshPortNumber) {
+        this.sshPortNumber = sshPortNumber;
+    }
+    @JsonProperty("SSH_Password")
+    public String getSshPassword() {
+        return sshPassword;
+    }
+
+    @JsonProperty("SSH_Password")
+    public void setSshPassword(String sshPassword) {
+        this.sshPassword = sshPassword;
     }
 
     @JsonAnyGetter

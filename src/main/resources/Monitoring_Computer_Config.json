@@ -1,11 +1,15 @@
 [
-    {
-        "Computer_Name": "Computer1",
-        "Computer_IP": "192.168.45.155",
-        "Container_Image": "indy-test",
-        "Container_Start_Port": 9601,
-        "Container_End_Port": 0,
-        "Node_Number": 0,
-        "Max_Node_Number": 0
-    }
-]
+        {
+            "Computer_Name": "Computer1",
+            "Computer_IP": "220.68.5.139",
+            "Container_Image": "indy-test",
+            "Container_Start_Port": 9801,
+            "Container_End_Port": 0,
+            "Node_Number": 0,
+            "Max_Node_Number": 9,
+            "SSH_User_Name": "root",
+            "SSH_Host_IP": "220.68.5.139",
+            "SSH_Port_Number": 22,
+            "SSH_Password": "umcl123456789"
+        }
+    ]

@@ -5,11 +5,8 @@ import com.export.node.Node;
 import com.export.node.NodeInfo;
 import com.export.utils.PoolUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.hyperledger.indy.sdk.ledger.Ledger;
 import org.hyperledger.indy.sdk.pool.Pool;
 import org.hyperledger.indy.sdk.did.Did;
@@ -20,14 +17,11 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.simple.parser.JSONParser;
 
-import static com.export.utils.PoolUtils.checkGenesisTxnFile;
+
 import static org.hyperledger.indy.sdk.ledger.Ledger.*;
 import static com.export.utils.PoolUtils.PROTOCOL_VERSION;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.util.*;
 
@@ -66,8 +60,6 @@ public class NodeMonitoring {
 
     int checkCount = -1;
 
-    MonitoringData monitoringData;
-    NodeInfo nodeInfo;
     String poolNameDefult = "sandbox";
     String nodeNameDefult = "NewNode";
     String monitoringDataDefultName = "Test";
@@ -251,6 +243,7 @@ public class NodeMonitoring {
         System.out.println(getAttribResponse);
     }
 
+    // 이미 생서한 지갑에서 필요한 정보를 조회
     public void findDidByWallet() throws Exception {
         System.out.println("find DID By Wallet");
 
@@ -283,19 +276,21 @@ public class NodeMonitoring {
         }
     }
 
+    // 모니터링 시작 함수
     public void StartNodeMonitoring() throws Exception {
         System.out.println("==== StartNodeMonitoring ====");
 
-        if (checkGenesisTxnFile(""))
+        // 모니터링을 위한 monitoringData 확인
+        // monitoringData는 node.MonitoringData 확인
+        List<MonitoringData> monitoringDataList = ReadMonitoringData();
 
-        if (monitoringDataList == null) monitoringDataList = new ArrayList<>();
-        if (monitoringDataList.size() <= 0)
-        {
-            //Test
-            monitoringDataList.add(ReadMonitoringData());
-            //monitoringDataList.add(CreateMonitoringData());
+        if (monitoringDataList.size() <= 0) {
+            System.out.println("There no monitoring Data in List");
+            monitoringDataList.add(CreateMonitoringData());
         }
-
+        
+        // 체크 노드 수 입력
+        // 해당 정수 값을 문제 노드에 더해 계산
         System.out.println("Check node number : ");
         int n;
         n = sc.nextInt();
@@ -306,6 +301,7 @@ public class NodeMonitoring {
             return;
         }
 
+        // 읽은 monitoringData를 기반으로 모니터링 시작
         for (MonitoringData monitoringData : monitoringDataList)
         {
             while (monitoringData.getMaxNodeNumber() >= addNodeList.size())
@@ -313,14 +309,18 @@ public class NodeMonitoring {
                 GetValidatorInfo(monitoringData, n);
                 Thread.sleep(60000);
             }
+            
+            // monitoringData의 Max_Node_Number 값을 모두 채울 경우 다음 monitoringData를 읽음
             System.out.println("monitoring node is full");
         }
     }
 
+    // 모니터링 데이터 생성
+    // Test용 코드로 임이의 MonitoringData 생성 시 사용
     public MonitoringData CreateMonitoringData() throws Exception {
         System.out.println("==== CreateMonitoringData ====");
 
-        this.monitoringData = new MonitoringData();
+        MonitoringData monitoringData = new MonitoringData();
 
         monitoringData.setPoolName(poolNameDefult);
         System.out.println("PoolName : " + monitoringData.getPoolName());
@@ -343,91 +343,80 @@ public class NodeMonitoring {
         monitoringData.setNodeNumber(0);
         System.out.println("NodeNumber : " + monitoringData.getNodeNumber());
 
-        monitoringData.setMaxNodeNumber(15);
+        monitoringData.setMaxNodeNumber(9);
         System.out.println("MaxNodeNumber : " + monitoringData.getMaxNodeNumber());
+
+        monitoringData.setSshUserName("");
+        System.out.println("SshUserName : " + monitoringData.getSshUserName());
+
+        monitoringData.setSshHostIp("");
+        System.out.println("SshHostIp : " + monitoringData.getSshHostIp());
+
+        monitoringData.setSshPortNumber(22);
+        System.out.println("SshPortNumber : " + monitoringData.getSshPortNumber());
+
+        monitoringData.setSshPassword("");
+        System.out.println("SshPassword : " + monitoringData.getSshPassword());
 
         System.out.println("Add MonitoringData");
 
         return monitoringData;
     }
 
-    public MonitoringData ReadMonitoringData() throws Exception {
+    // 모니터링 데이터 읽기
+    // resources에 있는 Monitoring_Computer_Config.json 파일을 읽어 리스트에 저장
+    public List<MonitoringData> ReadMonitoringData() throws Exception {
         System.out.println("==== ReadMonitoringData ====");
 
-        MonitoringData monitoringData = new MonitoringData();
+        // MonitoringData가 들어갈 리스트
+        List<MonitoringData> monitoringDataList = new ArrayList<>();
 
-        monitoringData.setPoolName(poolNameDefult);
-        System.out.println("PoolName : " + monitoringData.getPoolName());
+        // resources에 있는 Monitoring_Computer_Config.json 파일을 읽음
+        File file = new File(
+                this.getClass().getClassLoader().getResource("Monitoring_Computer_Config.json").getFile()
+        );
 
-        monitoringData.setComputerName(monitoringDataDefultName);
-        System.out.println("ComputerName : " + monitoringData.getComputerName());
+        if (!file.exists()) {
+            System.out.println("there no Monitoring_Computer_Config.json File");
+            return null;
+        }
 
-        monitoringData.setComputerIP("220.68.5.139");
-        System.out.println("ComputerIP : " + monitoringData.getComputerIP());
+        // Monitoring_Computer_Config.json 파일은 JSONArray 형식이며 이를 파싱해 하나씩 저장
+        Reader reader = new FileReader(this.getClass().getClassLoader()
+                .getResource("Monitoring_Computer_Config.json").getFile());
+        JSONParser parser = new JSONParser();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        monitoringData.setContainerImage("giry0612/indy-node-container");
-        System.out.println("ContainerImage : " + monitoringData.getContainerImage());
+        Object obj = parser.parse(reader);
+        System.out.println("obj : " + obj.toString());
+        JSONArray jsonArray = new JSONArray(obj.toString());
+        System.out.println("jsonArray : " + jsonArray.toString());
 
-        monitoringData.setContainerStartPort(9801);
-        System.out.println("ContainerStartPort : " + monitoringData.getContainerStartPort());
+        for (Object jsonObject : jsonArray)
+        {
+            MonitoringData monitoringData = objectMapper.readValue(jsonObject.toString(), MonitoringData.class);
+            System.out.println("monitoringData : " + monitoringData.getComputerName());
+            monitoringDataList.add(monitoringData);
+        }
 
-        monitoringData.setContainerEndPort(0);
-        System.out.println("ContainerEndPort : " + monitoringData.getContainerEndPort());
-
-        monitoringData.setNodeNumber(0);
-        System.out.println("NodeNumber : " + monitoringData.getNodeNumber());
-
-        monitoringData.setMaxNodeNumber(15);
-        System.out.println("MaxNodeNumber : " + monitoringData.getMaxNodeNumber());
-
-        System.out.println("Add MonitoringData");
-
-        return monitoringData;
+        //return monitoringData;
+        return monitoringDataList;
     }
 
-    /*
-    public void CheckPoolNode() throws Exception {
-        System.out.println("==== Check Pool Node ====");
-
-        /*
-        if(monitoringData.getComputerIP() != GetServerIP())
-        {
-            connection = new Connection("root", monitoringData.getComputerIP(),
-                    22, "umcl123456789");
-            connection.connectSSH();
-        }
-
-        System.out.println("Check node number : ");
-        int n;
-        n = sc.nextInt();
-
-        if (n < 1)
-        {
-            System.out.println("Input wrong Number");
-            return;
-        }
-
-        while (true)
-        {
-            if (!GetValidatorInfo(n)) {
-                RunIndyContainer();
-                AddNodeListCheck();
-            }
-
-            Thread.sleep(60000);
-        }
-    }
-    */
-
-
+    // Validator_Info 요청 함수
+    // @입력 값
+    // monitoringData: 읽은 모니터링 데이터
+    // n: 입력 받은 정수 값
     public void GetValidatorInfo(MonitoringData monitoringData, int n) throws Exception {
         System.out.println("==== getValidatorInfoObj ====");
         Connection connection = null;
 
+        // 풀에 Validator_Info를 요청
         String getValidatorInfoRequest = Ledger.buildGetValidatorInfoRequest(trusteeDid).get();
         String getValidatorInfoResponse = Ledger.signAndSubmitRequest(pool, wallet, trusteeDid,
                 getValidatorInfoRequest).get();
 
+        // 받은 Validator_Info 정보를 확인
         JSONObject getValidatorInfoObj = new JSONObject(getValidatorInfoResponse);
 
         Set<String> keysets = getValidatorInfoObj.keySet();
@@ -459,26 +448,39 @@ public class NodeMonitoring {
         System.out.println(totalNodeCount + " >= 3 * " + unreachableNodeCount + " + 1");
         System.out.println(totalNodeCount + " >= 3 * " + checkNodeCount + " + 1");
 
+        // 받은 Validator_Info를 통해 풀 정보를 확인 및 검증
         if (totalNodeCount >= 3 * checkNodeCount + 1) {
+            // 검증 시 문제가 없는 경우
             System.out.println("Node Check No Problem");
             return;
         }
         else {
-
+            // 검증 시 문제가 있다고 판단되는 경우 노드 추가를 진행
             try {
                 System.out.println("Need Node Add");
 
+                // 먼저 컨테이너 생성을 통해 노드 생성
+                
+                // 노드 연결을 외부 컴퓨터를 통해 실행할 경우
                 if (!monitoringData.getComputerIP().equals(GetServerIP()))
                 {
+                    // 현재 연구실 컴퓨터에 연결
                     System.out.println("Connection Ip is " + monitoringData.getComputerIP());
-                    connection = new Connection("root", monitoringData.getComputerIP(),
-                            22, "umcl123456789");
+                    connection = new Connection(monitoringData.getSshUserName(), monitoringData.getComputerIP(),
+                            monitoringData.getSshPortNumber(), monitoringData.getSshPassword());
                     connection.connectSSHServer();
                     connection.connectChannelSftp();
+
+                    // 외부 우분투 컴퓨터일 경우 실행
+                    RunIndyContainerUbuntu(monitoringData, connection);
                 }
-                RunIndyContainerUbuntu(monitoringData, connection);
-                //RunIndyContainerWindow(monitoringData, connection);
+                else {
+                    // 외부 조작이 필요없는 로컬 윈도우 컴퓨터일 경우 실행
+                    RunIndyContainerWindow(monitoringData);
+                }
                 Thread.sleep(60000);
+
+                // 이후 생성된 노드들을 추가하는 작업 진행
                 AddNodeListCheck();
 
             } catch (JSchException e) {
@@ -494,9 +496,13 @@ public class NodeMonitoring {
         }
     }
 
-    public void RunIndyContainerWindow(MonitoringData monitoringData, Connection connection) throws Exception {
+    // 로컬 윈도우 컴퓨터의 노드 생성 함수
+    // @입력 값
+    // monitoringData: 읽은 모니터링 데이터
+    public void RunIndyContainerWindow(MonitoringData monitoringData) throws Exception {
         System.out.println("==== RunIndyContainer ====");
 
+        // monitoringData를 읽어 각각의 필요한 값들 정의
         String poolName = monitoringData.getPoolName();
         System.out.println("poolName : " + poolName);
         String containerName = monitoringData.getComputerName() + containerDefultNumber++;
@@ -523,6 +529,8 @@ public class NodeMonitoring {
 
         String containerPort = startPort + "-" + endPort;
 
+        // 정의된 값들 기반으로 컨테이너 생성 및 노드 생성 진행
+        // 노드의 경우 하나의 컨테이너를 생성한 이후 3개의 노드 생성 및 실행
         cmd = "docker run -itd --name " + containerName + " -p " + containerIp + ":" + containerPort + ":" + containerPort + " -e POOL=\"" + poolName + "\" " + monitoringData.getContainerImage();
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
@@ -539,6 +547,7 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         RunWindowCmd(cmd);
 
+        // 노드 생성 및 실행
         for(int i = 0; i < 3; i++)
         {
             Node _node = new Node();
@@ -551,8 +560,6 @@ public class NodeMonitoring {
             cmd = "docker cp " + containerName + ":/" + _nodeName + "_info.txt " + FileUtils.getUserDirectoryPath();
             System.out.println("cmd : " + cmd);
             RunWindowCmd(cmd);
-
-            //connection.download("/root", _nodeName + "_info.txt", FileUtils.getUserDirectoryPath());
 
             cmd = "docker exec --user root -d " + containerName + " sh -c \"start_indy_node " + _nodeName
                     + " 0.0.0.0 " + nodePort + " 0.0.0.0 " + nodeClientPort + "\"";
@@ -568,6 +575,7 @@ public class NodeMonitoring {
             _node.setNodeClientPort(nodeClientPort);
             System.out.println("nodeClientPort : " + nodeClientPort);
 
+            // 생성된 노드들을 리스트에 저장
             readyNodeList.add(_node);
 
             nodePort += 2;
@@ -580,6 +588,10 @@ public class NodeMonitoring {
         System.out.println("check nodeNumber : " + checkNumber);
     }
 
+    // 외부 우분투 컴퓨터의 노드 생성 함수
+    // @입력 값
+    // monitoringData: 읽은 모니터링 데이터
+    // connection: ssh 명령어 전달을 위한 연결 값
     public void RunIndyContainerUbuntu(MonitoringData monitoringData, Connection connection) throws Exception {
         System.out.println("==== RunIndyContainer ====");
 
@@ -589,6 +601,7 @@ public class NodeMonitoring {
             return;
         }
 
+        // monitoringData를 읽어 각각의 필요한 값들 정의
         String poolName = monitoringData.getPoolName();
         System.out.println("poolName : " + poolName);
         String containerName = monitoringData.getComputerName() + containerDefultNumber++;
@@ -615,6 +628,8 @@ public class NodeMonitoring {
 
         String containerPort = startPort + "-" + endPort;
 
+        // 정의된 값들 기반으로 컨테이너 생성 및 노드 생성 진행
+        // 노드의 경우 하나의 컨테이너를 생성한 이후 3개의 노드 생성 및 실행
         cmd = "docker run -itd --name " + containerName + " -p " + containerIp + ":" + containerPort + ":" + containerPort + " -e POOL=\"" + poolName + "\" " + monitoringData.getContainerImage();
         System.out.println("cmd : " + cmd);
         connection.command(cmd);
@@ -631,6 +646,7 @@ public class NodeMonitoring {
         System.out.println("cmd : " + cmd);
         connection.command(cmd);
 
+        // 노드 생성 및 실행
         for(int i = 0; i < 3; i++)
         {
             Node _node = new Node();
@@ -660,6 +676,7 @@ public class NodeMonitoring {
             _node.setNodeClientPort(nodeClientPort);
             System.out.println("nodeClientPort : " + nodeClientPort);
 
+            // 생성된 노드들을 리스트에 저장
             readyNodeList.add(_node);
 
             nodePort += 2;
@@ -672,6 +689,9 @@ public class NodeMonitoring {
         System.out.println("check nodeNumber : " + checkNumber);
     }
 
+    // 윈도우 명령어 전달 함수
+    // @입력 값
+    // cmd: 실행할 윈도우 명령어
     public String RunWindowCmd(String cmd) throws Exception {
         Process p = Runtime.getRuntime().exec("cmd /c " + cmd);
         BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -686,31 +706,29 @@ public class NodeMonitoring {
         return line;
     }
 
-    public void NodeListCheck() throws Exception {
-
-        System.out.println("readyNodeList size : " + readyNodeList.size());
-        for (Node node : readyNodeList)
-        {
-            System.out.println("NodeName : " + node.getNodeName());
-        }
-    }
-
+    // 추가할 노드 확인 함수
     public void AddNodeListCheck() throws Exception {
         System.out.println("==== AddNodeListCheck ====");
 
+        // 위 노드 생성 및 실행 함수를 통해 리스트에 추가된 노드들을 확인
         while (readyNodeList.size() != 0)
         {
+            // 확인된 노드들의 노드 추가 요청을 진행
             Node _node = readyNodeList.get(0);
             System.out.println("NodeName : " + _node.getNodeName());
-
+            
             AddNode(_node);
             addNodeList.add(_node);
             readyNodeList.remove(_node);
         }
     }
-
+    
+    // 노드 추가 함수
+    // @입력 값
+    // node: 추가할 노드 정보
     public void AddNode(Node node) throws Exception {
         System.out.println("======== AddNode ========");
+
 
         Scanner nodeFileScanner = new Scanner(new File(
                 FileUtils.getUserDirectoryPath() + "/" + node.getNodeName() + "_info.txt"));
@@ -776,23 +794,6 @@ public class NodeMonitoring {
         System.out.println("Server IP : " + server.getHostAddress());
 
         return server.getHostAddress();
-    }
-
-    public void GetResourceFile() throws Exception {
-
-        String something = IOUtils.toString(
-                getClass().getResourceAsStream("/clientIP.json"), "UTF-8");
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        nodeInfo = objectMapper.readValue(something, NodeInfo.class);
-
-        System.out.println("nodeInfo ContainerName : " + nodeInfo.getContainerName());
-        System.out.println("nodeInfo ContainerIP : " + nodeInfo.getContainerIP());
-        System.out.println("nodeInfo ContainerStartPort() : " + nodeInfo.getContainerStartPort());
-        System.out.println("nodeInfo ContainerEndPort() : " + nodeInfo.getContainerEndPort());
-
-        nodeInfoList.add(nodeInfo);
     }
 }
 

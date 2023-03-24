@@ -10,14 +10,36 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class PoolUtils {
+    
+    // 풀 설정 저장 시 생성되는 파일 이름
+    // 기존의 풀과 다른 풀에 연결할 경우 이름 변경 또는 기존 파일 삭제 필요
+    // 파일 위치(윈도우 기준) : C:\Users\사용자컴퓨터이름\.indy_client
     private static final String DEFAULT_POOL_NAME = "issuer9";
+
+    // 풀 버전 적용시 사용 (기본 2)
     public static final int PROTOCOL_VERSION = 2;
 
-
+    // 제네시스 파일이 없을 경우 자체적으로 생성
+    // EnvironmentUtils의 testPoolIp 값으로 수정가능
     private static File createGenesisTxnFile(String filename) throws IOException {
-        String path = EnvironmentUtils.getTmpPath(filename);
+        System.out.println("=== CreateGenesisTxnFile ===");
+        //String path = EnvironmentUtils.getTmpPath(filename);
+
+        String path;
+
+        // 운영체제 확인
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            path = FileUtils.getUserDirectoryPath() + "\\" + filename; // Window
+        }
+        else {
+            path = new File("").getAbsolutePath() + "\\" + filename; // Centos
+        }
+
+        // 풀 IP 설정
         String testPoolIp = EnvironmentUtils.getTestPoolIP();
 
+        // 제네시스 파일 입력 및 생성
         String[] defaultTxns = new String[]{
                 String.format("{\"reqSignature\":{},\"txn\":{\"data\":{\"data\":{\"alias\":\"Node1\",\"blskey\":\"4N8aUNHSgjQVgkpm8nhNEfDf6txHznoYREg9kirmJrkivgL4oSEimFF6nsQ6M41QvhM2Z33nves5vfSn9n1UwNFJBYtWVnHYMATn76vLuL3zU88KyeAYcHfsih3He6UHcXDxcaecHVz6jhCYz1P2UZn2bDVruL5wXpehgBfBaLKm3Ba\",\"blskey_pop\":\"RahHYiCvoNCtPTrVtP7nMC5eTYrsUA8WjXbdhNc8debh1agE9bGiJxWBXYNFbnJXoXhWFMvyqhqhRoq737YQemH5ik9oL7R4NTTCz2LEZhkgLJzB3QRQqJyBNyv7acbdHrAT8nQ9UkLbaVL9NBpnWXBTw4LEMePaSHEw66RzPNdAX1\",\"client_ip\":\"%s\",\"client_port\":9702,\"node_ip\":\"%s\",\"node_port\":9701,\"services\":[\"VALIDATOR\"]},\"dest\":\"Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv\"},\"metadata\":{\"from\":\"Th7MpTaRZVRYnPiabds81Y\"},\"type\":\"0\"},\"txnMetadata\":{\"seqNo\":1,\"txnId\":\"fea82e10e894419fe2bea7d96296a6d46f50f93f9eeda954ec461b2ed2950b62\"},\"ver\":\"1\"}", testPoolIp, testPoolIp),
                 String.format("{\"reqSignature\":{},\"txn\":{\"data\":{\"data\":{\"alias\":\"Node2\",\"blskey\":\"37rAPpXVoxzKhz7d9gkUe52XuXryuLXoM6P6LbWDB7LSbG62Lsb33sfG7zqS8TK1MXwuCHj1FKNzVpsnafmqLG1vXN88rt38mNFs9TENzm4QHdBzsvCuoBnPH7rpYYDo9DZNJePaDvRvqJKByCabubJz3XXKbEeshzpz4Ma5QYpJqjk\",\"blskey_pop\":\"Qr658mWZ2YC8JXGXwMDQTzuZCWF7NK9EwxphGmcBvCh6ybUuLxbG65nsX4JvD4SPNtkJ2w9ug1yLTj6fgmuDg41TgECXjLCij3RMsV8CwewBVgVN67wsA45DFWvqvLtu4rjNnE9JbdFTc1Z4WCPA3Xan44K1HoHAq9EVeaRYs8zoF5\",\"client_ip\":\"%s\",\"client_port\":9704,\"node_ip\":\"%s\",\"node_port\":9703,\"services\":[\"VALIDATOR\"]},\"dest\":\"8ECVSk179mjsjKRLWiQtssMLgp6EPhWXtaYyStWPSGAb\"},\"metadata\":{\"from\":\"EbP4aYNeTHL6q385GuVpRV\"},\"type\":\"0\"},\"txnMetadata\":{\"seqNo\":2,\"txnId\":\"1ac8aece2a18ced660fef8694b61aac3af08ba875ce3026a160acbc3a3af35fc\"},\"ver\":\"1\"}\n", testPoolIp, testPoolIp),
@@ -40,52 +62,57 @@ public class PoolUtils {
         return file;
     }
 
+    // 제네시스 파일이 있을 경우 읽기
+    // 파일 위치(윈도우 기준) : C:\Users\사용자컴퓨터이름\
+    //         (Cento os 기준) : home/사용자이름/
     private static File readGenesisTxnFile(String filename) {
+        System.out.println("=== ReadGenesisTxnFile ===");
 
-        // Window
-        String path = FileUtils.getUserDirectoryPath() + "\\" + filename;
+        String path;
+        File file;
+        String os = System.getProperty("os.name").toLowerCase();
 
-        File file = new File(path);
+        if (os.contains("win")) {
+            // Window
+            path = FileUtils.getUserDirectoryPath() + "\\" + filename;
+            file = new File(path);
+            if (file.exists()) return file;
+        }
+        else {
+            // Centos
+            path = new File("").getAbsolutePath() + "\\" + filename;
+            file = new File(path);
+            if (file.exists()) return file;
 
-        if (file != null) return file;
+        }
 
-        // Centos
-        path = new File("").getAbsolutePath() + "\\" + filename;
-
-        file = new File(path);
-
-        if (file != null) return file;
-
-        return null;
+        System.out.println("there no file");
+        return new File("");
     }
 
-    public static boolean checkGenesisTxnFile(String filename) {
-
-        String path = new File("").getAbsolutePath() + "\\" + filename;
-
-        File file = new File(path);
-
-        if (file != null) return true;
-
-        path = FileUtils.getUserDirectoryPath() + "\\" + filename;
-
-        file = new File(path);
-
-        if (file != null) return true;
-
-        return false;
-    }
-
+    // 설정 파일 생성
+    // 풀 정보를 만들어 저장하며 이후 해당 정보를 통해 연결
     public static String createPoolLedgerConfig() throws IOException, InterruptedException, java.util.concurrent.ExecutionException, IndyException {
         //File genesisTxnFile = createGenesisTxnFile("temp.txn");
+        System.out.println("=== CreatePoolLedgerConfig ===");
 
-        if (!checkGenesisTxnFile("pool_transactions_genesis"))
-        {
+        // 제네시스 파일 읽기
+        File genesisTxnFile = readGenesisTxnFile("pool_transactions_genesis");
+
+        // 제네시스 파일이 없을 경우 새로 생성
+        if (!genesisTxnFile.exists()) {
             System.out.println("there no transactions file!");
+            genesisTxnFile = createGenesisTxnFile("pool_transactions_genesis");
+        }
+
+        // 위 행동을 통해 생성되지 않을 경우 Null 반환
+        if (!genesisTxnFile.exists()) {
+            System.out.println("The pool_transactions_genesis file was not recognized. " +
+                    "Please check the pool_transactions_genesis file.");
             return null;
         }
 
-        File genesisTxnFile = readGenesisTxnFile("pool_transactions_genesis");
+        // 위 정보 기반으로 설정 파일 생성
         PoolJSONParameters.CreatePoolLedgerConfigJSONParameter createPoolLedgerConfigJSONParameter
                 = new PoolJSONParameters.CreatePoolLedgerConfigJSONParameter(genesisTxnFile.getAbsolutePath());
         System.out.println("PoolLedgerConfig : " + createPoolLedgerConfigJSONParameter);
@@ -94,6 +121,7 @@ public class PoolUtils {
         System.out.println("poolFilePath : " + poolFilePath);
         File poolFilePathCheck = new File(poolFilePath);
 
+        // 이미 만들어진 설정 파일이 있는지 확인
         System.out.println("poolFilePathCheck : " + poolFilePathCheck.isDirectory());
         if (!poolFilePathCheck.isDirectory())
         {

@@ -82,7 +82,6 @@ public class Main {
 
                             String path = "/root";
                             String fileName = "pool_transactions_genesis";
-                            //String userPath = Main.class.getClassLoader().getResource("clientIP.json").getPath();
                             String userPath = new File("").getAbsolutePath();
                             System.out.println("userPath : " + userPath);
                             connection.download(path, fileName, userPath);
@@ -92,31 +91,40 @@ public class Main {
                         }
                         break;
                     case 7:
-                        System.out.println("case 7");
-                        indyNodeManager.ConnectIndyPool();
-                        walletId = "wallet" + (Math.random() * 1000);
-                        walletPw = "1234";
-                        indyNodeManager.createWallet(walletId, walletPw);
-                        indyNodeManager.createTrusteeDid();
-                        indyNodeManager.createDid();
-                        indyNodeManager.StartNodeMonitoring();
+                        String os = System.getProperty("os.name").toLowerCase();
+                        if (os.contains("win")) {
+                            System.out.println("Windows");
+
+                        } else if (os.contains("mac")) {
+                            System.out.println("Mac");
+
+                        } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+                            System.out.println("Unix");
+
+                        } else if (os.contains("linux")) {
+                            System.out.println("Linux");
+
+                        } else if (os.contains("sunos")) {
+                            System.out.println("Solaris");
+                        }
                         break;
                     case 8:
                         indyNodeManager.AddNodeListCheck();
                         break;
                     case 9:
-                        indyNodeManager.GetResourceFile();
+                        indyNodeManager.ReadMonitoringData();
                         break;
                     case 10:
                         System.out.println("case 7");
                         indyNodeManager.ConnectIndyPool();
+                        // 랜덤 지갑 생성
                         walletId = "wallet" + (Math.random() * 1000);
                         walletPw = "1234";
                         indyNodeManager.createWallet(walletId, walletPw);
                         indyNodeManager.createTrusteeDid();
                         indyNodeManager.createDid();
                         indyNodeManager.StartNodeMonitoring();
-                        return;
+                        break;
                     default:
                         System.out.println("잘못된 입력 값");
                         break;
